@@ -1,17 +1,5 @@
 FinTrack — Personal Finance Tracker
 
-A Flutter mobile application for tracking personal income and expenses in
-Malaysian Ringgit (RM). Built for **CSC2074 Mobile Application Development**
-(Sunway University), FinTrack lets users record transactions, organise them by
-category, and understand their spending through visual insights — all stored
-locally on the device so the data survives app restarts.
-
-> **Problem it solves:** Many people lose track of where their money goes.
-> FinTrack gives a fast, offline, at-a-glance view of balance, income, expenses,
-> and spending breakdowns, with a frictionless flow for logging transactions.
-
----
-
 Features
 
 - **Dashboard** — total balance, a computed "% saved" indicator, income/expense
