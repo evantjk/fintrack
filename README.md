@@ -21,11 +21,11 @@ Features
 
 | Dashboard (Original) | Dashboard (Luxury) | Statistics |
 |---|---|---|
-| ![Home](docs/screenshots/home_original.png) | ![Luxury](docs/screenshots/home_luxury.png) | ![Statistics](docs/screenshots/statistics.png) |
+| ![Home](fintrack-mobile/screenshots/home_original.png) | ![Luxury](fintrack-mobile/screenshots/home_luxury.png) | ![Statistics](fintrack-mobile/screenshots/statistics.png) |
 
 | Transactions | Add Transaction | Categories |
 |---|---|---|
-| ![Transactions](docs/screenshots/transactions.png) | ![Add](docs/screenshots/add_transaction.png) | ![Categories](docs/screenshots/categories.png) |
+| ![Transactions](fintrack-mobile/screenshots/transactions.png) | ![Add](fintrack-mobile/screenshots/add_transaction.png) | ![Categories](fintrack-mobile/screenshots/categories.png) |
 
 🛠 Tech Stack
 
@@ -40,10 +40,19 @@ Features
 
 🏗 Architecture
 
-FinTrack follows a layered structure with clear separation of concerns:
+The repository is a monorepo with two parts:
 
 ```
-lib/
+fintrack/
+├── fintrack-mobile/   # Flutter app (the focus of this README)
+└── fintrack-api/      # Python / Firebase backend service — in progress
+```
+
+The Flutter app (`fintrack-mobile/`) follows a layered structure with clear
+separation of concerns:
+
+```
+fintrack-mobile/lib/
 ├── main.dart                       # App entry, providers, MaterialApp
 ├── models/                         # Plain data models
 │   ├── transaction.dart
@@ -95,9 +104,9 @@ Prerequisites
 
 ### Run
 ```bash
-# 1. Clone
+# 1. Clone, then enter the Flutter app
 git clone https://github.com/evantjk/fintrack.git
-cd fintrack
+cd fintrack/fintrack-mobile
 
 # 2. Install dependencies
 flutter pub get
