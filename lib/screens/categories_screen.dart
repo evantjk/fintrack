@@ -9,19 +9,26 @@ class CategoriesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
+    // Use the active theme's font (pixel themes -> pixel font, Luxury -> serif,
+    // Original -> default) instead of forcing the pixel font everywhere.
+    final tabStyle =
+        TextStyle(fontFamily: p.fontFamily, fontSize: p.hardShadow ? 10 : 14);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Categories'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Expense'),
-              Tab(text: 'Income'),
+          title: const Text('CATEGORIES'),
+          bottom: TabBar(
+            tabs: const [
+              Tab(text: 'EXPENSE'),
+              Tab(text: 'INCOME'),
             ],
             labelColor: Colors.white,
             indicatorColor: Colors.white,
             unselectedLabelColor: Colors.white70,
+            labelStyle: tabStyle,
+            unselectedLabelStyle: tabStyle,
           ),
         ),
         body: Consumer<TransactionProvider>(
@@ -40,8 +47,6 @@ class CategoriesScreen extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _showCategoryDialog(context, null),
-          backgroundColor: AppTheme.primary,
-          foregroundColor: Colors.white,
           child: const Icon(Icons.add),
         ),
       ),
@@ -64,16 +69,16 @@ class _CategoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     if (categories.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.category_outlined,
-                size: 64, color: AppTheme.textMuted),
+            Icon(Icons.category_outlined, size: 64, color: p.textMuted),
             const SizedBox(height: 16),
             Text('No $type categories.',
-                style: const TextStyle(color: AppTheme.textMuted)),
+                style: TextStyle(color: p.textMuted, fontSize: 9)),
           ],
         ),
       );
@@ -81,7 +86,7 @@ class _CategoryList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: categories.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
+      separatorBuilder: (context, index) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
         final cat = categories[i];
         return _CategoryTile(
@@ -97,20 +102,21 @@ class _CategoryList extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context, Category cat) async {
+    final p = PixelColors.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Delete Category'),
         content: Text(
-            'Delete "${cat.name}"? Transactions using it will not be deleted.'),
+            'Delete "${cat.name}"? Transactions using it will not be deleted.',
+            style: const TextStyle(fontSize: 10, height: 1.6)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel')),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete',
-                  style: TextStyle(color: AppTheme.expenseColor))),
+              child: Text('Delete', style: TextStyle(color: p.expense))),
         ],
       ),
     );
@@ -134,40 +140,42 @@ class _CategoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     final color = Color(category.colorValue);
     return Card(
       child: ListTile(
         leading: Container(
-          width: 44,
-          height: 44,
+          width: 46,
+          height: 46,
           decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12)),
+              color: color.withValues(alpha: 0.18),
+              borderRadius: p.radius == 0 ? null : BorderRadius.circular(14),
+              border: Border.all(color: color, width: p.hardShadow ? 2 : 1.5)),
           child: Center(
             child: Text(category.icon,
-                style: const TextStyle(fontSize: 22)),
+                style: const TextStyle(fontSize: 20)),
           ),
         ),
         title: Text(category.name,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, color: AppTheme.textDark)),
-        subtitle: Text(
-          category.type == 'income' ? 'Income' : 'Expense',
-          style: TextStyle(
-              color: category.type == 'income'
-                  ? AppTheme.incomeColor
-                  : AppTheme.expenseColor,
-              fontSize: 12),
+            style: TextStyle(fontSize: 11, height: 1.4, color: p.textDark)),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            category.type == 'income' ? 'Income' : 'Expense',
+            style: TextStyle(
+                color: category.type == 'income' ? p.income : p.expense,
+                fontSize: 8),
+          ),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.edit_outlined, color: AppTheme.textMuted),
+              icon: Icon(Icons.edit_outlined, color: p.textMuted),
               onPressed: onEdit,
             ),
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppTheme.expenseColor),
+              icon: Icon(Icons.delete_outline, color: p.expense),
               onPressed: onDelete,
             ),
           ],
@@ -222,6 +230,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return AlertDialog(
       title: Text(widget.category == null ? 'Add Category' : 'Edit Category'),
       content: SingleChildScrollView(
@@ -235,7 +244,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   labelText: 'Category Name', hintText: 'e.g. Coffee'),
             ),
             const SizedBox(height: 16),
-            const Text('Type', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('Type', style: TextStyle(fontSize: 9, color: p.textDark)),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -245,7 +254,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text('Icon', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('Icon', style: TextStyle(fontSize: 9, color: p.textDark)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -258,13 +267,15 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                           height: 40,
                           decoration: BoxDecoration(
                             color: _icon == ic
-                                ? AppTheme.primary.withValues(alpha: 0.15)
-                                : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(10),
+                                ? p.accent.withValues(alpha: 0.15)
+                                : p.surfaceAlt,
+                            borderRadius:
+                                p.radius == 0 ? null : BorderRadius.circular(10),
                             border: Border.all(
                               color: _icon == ic
-                                  ? AppTheme.primary
-                                  : Colors.transparent,
+                                  ? p.accent
+                                  : (p.hardShadow ? p.outline : const Color(0xFFE0E0E0)),
+                              width: _icon == ic ? 2 : 1.5,
                             ),
                           ),
                           child: Center(
@@ -275,7 +286,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   .toList(),
             ),
             const SizedBox(height: 16),
-            const Text('Color', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('Color', style: TextStyle(fontSize: 9, color: p.textDark)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -288,11 +299,11 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                           height: 32,
                           decoration: BoxDecoration(
                             color: Color(c),
-                            shape: BoxShape.circle,
-                            border: _colorValue == c
-                                ? Border.all(
-                                    color: Colors.black, width: 2.5)
-                                : null,
+                            shape: p.radius == 0 ? BoxShape.rectangle : BoxShape.circle,
+                            border: Border.all(
+                              color: _colorValue == c ? p.outline : Colors.transparent,
+                              width: 3,
+                            ),
                           ),
                         ),
                       ))
@@ -315,22 +326,25 @@ class _CategoryDialogState extends State<_CategoryDialog> {
 
   // ignore: non_constant_identifier_names
   Widget _TypeBtn(String label, String value) {
+    final p = PixelColors.of(context);
     final isSelected = _type == value;
-    final color = value == 'income' ? AppTheme.incomeColor : AppTheme.expenseColor;
+    final color = value == 'income' ? p.income : p.expense;
     return GestureDetector(
       onTap: () => setState(() => _type = value),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.15) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? color.withValues(alpha: 0.15) : p.surfaceAlt,
+          borderRadius: p.radius == 0 ? null : BorderRadius.circular(8),
           border: Border.all(
-              color: isSelected ? color : Colors.transparent),
+              color: isSelected
+                  ? color
+                  : (p.hardShadow ? p.outline : const Color(0xFFE0E0E0)),
+              width: isSelected ? 2 : 1.5),
         ),
         child: Text(label,
             style: TextStyle(
-                color: isSelected ? color : Colors.grey,
-                fontWeight: FontWeight.w600)),
+                color: isSelected ? color : p.textMuted, fontSize: 9)),
       ),
     );
   }

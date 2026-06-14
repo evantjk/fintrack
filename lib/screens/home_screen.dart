@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
+import '../widgets/theme_switcher.dart';
+import '../widgets/mascots.dart';
 import '../theme/app_theme.dart';
 import 'add_edit_transaction_screen.dart';
 import 'transactions_screen.dart';
@@ -28,37 +30,46 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => setState(() => _currentIndex = i),
-        destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'Home'),
-          NavigationDestination(
-              icon: Icon(Icons.receipt_long_outlined),
-              selectedIcon: Icon(Icons.receipt_long),
-              label: 'Transactions'),
-          NavigationDestination(
-              icon: Icon(Icons.bar_chart_outlined),
-              selectedIcon: Icon(Icons.bar_chart),
-              label: 'Statistics'),
-          NavigationDestination(
-              icon: Icon(Icons.category_outlined),
-              selectedIcon: Icon(Icons.category),
-              label: 'Categories'),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: p.hardShadow ? p.outline : const Color(0xFFE3E7ED),
+              width: p.hardShadow ? 2 : 1,
+            ),
+          ),
+        ),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (i) => setState(() => _currentIndex = i),
+          destinations: const [
+            NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Home'),
+            NavigationDestination(
+                icon: Icon(Icons.receipt_long_outlined),
+                selectedIcon: Icon(Icons.receipt_long),
+                label: 'Transactions'),
+            NavigationDestination(
+                icon: Icon(Icons.bar_chart_outlined),
+                selectedIcon: Icon(Icons.bar_chart),
+                label: 'Statistics'),
+            NavigationDestination(
+                icon: Icon(Icons.category_outlined),
+                selectedIcon: Icon(Icons.category),
+                label: 'Categories'),
+          ],
+        ),
       ),
       floatingActionButton: _currentIndex == 0 || _currentIndex == 1
           ? FloatingActionButton.extended(
               onPressed: () => _openAddTransaction(context),
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.white,
               icon: const Icon(Icons.add),
-              label: const Text('Add'),
+              label: const Text('ADD'),
             )
           : null,
     );
@@ -77,14 +88,23 @@ class _DashboardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('FinTrack'),
+        titleSpacing: 0,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const ThemeMascot(size: 26, outline: Colors.white),
+            const SizedBox(width: 8),
+            const Text('FINTRACK'),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
+            tooltip: 'Switch theme',
+            icon: const Icon(Icons.palette_outlined),
+            onPressed: () => showThemeSwitcher(context),
           ),
         ],
       ),
@@ -105,39 +125,38 @@ class _DashboardTab extends StatelessWidget {
                     income: provider.totalIncome,
                     expense: provider.totalExpense,
                   ),
-                  _QuickActions(),
+                  const _QuickActions(),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Recent Transactions',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: AppTheme.textDark),
+                        Text(
+                          'RECENT',
+                          style: TextStyle(fontSize: 11, color: p.textDark),
                         ),
                         TextButton(
                           onPressed: () {},
-                          child: const Text('See all'),
+                          child: const Text('SEE ALL'),
                         ),
                       ],
                     ),
                   ),
                   if (provider.recentTransactions.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(32),
+                    Padding(
+                      padding: const EdgeInsets.all(32),
                       child: Center(
                         child: Column(
                           children: [
-                            Icon(Icons.inbox_outlined,
-                                size: 56, color: AppTheme.textMuted),
-                            SizedBox(height: 12),
+                            ThemeMascot(size: 72, outline: p.outline),
+                            const SizedBox(height: 16),
                             Text(
                               'No transactions yet.\nTap + to add your first one.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: AppTheme.textMuted),
+                              style: TextStyle(
+                                  color: p.textMuted,
+                                  fontSize: 9,
+                                  height: 1.6),
                             ),
                           ],
                         ),
@@ -172,17 +191,20 @@ class _DashboardTab extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
+  const _QuickActions();
+
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           Expanded(
             child: _ActionButton(
-              label: 'Add Income',
+              label: 'INCOME',
               icon: Icons.add_circle_outline,
-              color: AppTheme.incomeColor,
+              color: p.income,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -195,9 +217,9 @@ class _QuickActions extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: _ActionButton(
-              label: 'Add Expense',
+              label: 'EXPENSE',
               icon: Icons.remove_circle_outline,
-              color: AppTheme.expenseColor,
+              color: p.expense,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -228,26 +250,48 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
+    final bool pixel = p.hardShadow;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: p.br,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          // Surface card (adapts per theme) instead of a flat colour wash.
+          color: p.surface,
+          borderRadius: p.br,
+          border: p.box(pixel ? p.outline : const Color(0xFFE3E7ED),
+              pixel ? 2 : 1),
+          boxShadow: pixel
+              ? [BoxShadow(color: p.outline, offset: const Offset(3, 3))]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 8),
+            // Tinted icon chip — circular for soft themes, square for pixel.
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.14),
+                shape: pixel ? BoxShape.rectangle : BoxShape.circle,
+                border: Border.all(color: color, width: pixel ? 2 : 1.5),
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(width: 10),
             Text(label,
                 style: TextStyle(
                     color: color,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13)),
+                    fontSize: pixel ? 9 : 14,
+                    fontWeight: pixel ? null : FontWeight.w600)),
           ],
         ),
       ),

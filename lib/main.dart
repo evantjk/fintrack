@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/transaction_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
-import 'theme/app_theme.dart';
 
 void main() {
   runApp(const FinTrackApp());
@@ -13,13 +13,22 @@ class FinTrackApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => TransactionProvider()..loadAll(),
-      child: MaterialApp(
-        title: 'FinTrack',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        home: const HomeScreen(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => TransactionProvider()..loadAll(),
+        ),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            title: 'FinTrack',
+            debugShowCheckedModeBanner: false,
+            theme: themeProvider.themeData,
+            home: const HomeScreen(),
+          );
+        },
       ),
     );
   }

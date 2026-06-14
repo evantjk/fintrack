@@ -78,7 +78,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(_isEditing ? 'Edit Transaction' : 'Add Transaction'),
+            title: Text(_isEditing ? 'EDIT' : 'ADD'),
             actions: [
               if (_isEditing)
                 IconButton(
@@ -101,7 +101,15 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                       _selectedCategory = null;
                     }),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
+                  _AmountField(
+                    controller: _amountCtrl,
+                    color: _type == 'income'
+                        ? PixelColors.of(context).income
+                        : PixelColors.of(context).expense,
+                    pixel: PixelColors.of(context).hardShadow,
+                  ),
+                  const SizedBox(height: 24),
                   _label('Title'),
                   TextFormField(
                     controller: _titleCtrl,
@@ -111,25 +119,6 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                     ),
                     validator: (v) =>
                         v == null || v.trim().isEmpty ? 'Title is required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  _label('Amount (RM)'),
-                  TextFormField(
-                    controller: _amountCtrl,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      hintText: '0.00',
-                      prefixIcon: Icon(Icons.attach_money_outlined),
-                    ),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Amount is required';
-                      final parsed = double.tryParse(v);
-                      if (parsed == null || parsed <= 0) {
-                        return 'Enter a valid positive amount';
-                      }
-                      return null;
-                    },
                   ),
                   const SizedBox(height: 16),
                   _label('Category'),
@@ -196,11 +185,10 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
                             )
-                          : Text(_isEditing ? 'Update Transaction' : 'Save Transaction',
-                              style: const TextStyle(fontSize: 16)),
+                          : Text(_isEditing ? 'UPDATE' : 'SAVE'),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -216,10 +204,8 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(text,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: AppTheme.textDark)),
+            style: TextStyle(
+                fontSize: 9, color: PixelColors.of(context).textDark)),
       );
 
   Future<void> _pickDate() async {
@@ -265,8 +251,8 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
               child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete',
-                style: TextStyle(color: AppTheme.expenseColor)),
+            child: Text('Delete',
+                style: TextStyle(color: PixelColors.of(context).expense)),
           ),
         ],
       ),
@@ -288,11 +274,13 @@ class _TypeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(14),
+        color: p.surfaceAlt,
+        borderRadius: p.radius == 0 ? null : BorderRadius.circular(14),
+        border: p.box(p.outline, 2),
       ),
       child: Row(
         children: [
@@ -314,27 +302,103 @@ class _Tab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     final isSelected = value == selected;
-    final color = value == 'income' ? AppTheme.incomeColor : AppTheme.expenseColor;
+    final color = value == 'income' ? p.income : p.expense;
     return GestureDetector(
       onTap: () => onChanged(value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? color : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: p.radius == 0 ? null : BorderRadius.circular(10),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
+            color: isSelected ? Colors.white : p.textMuted,
+            fontSize: p.hardShadow ? 9 : 13,
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Large focal amount input, tinted to the selected type's colour. Replaces the
+/// small inline amount field so the most important value is the visual anchor.
+class _AmountField extends StatelessWidget {
+  final TextEditingController controller;
+  final Color color;
+  final bool pixel;
+
+  const _AmountField({
+    required this.controller,
+    required this.color,
+    required this.pixel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
+    return Column(
+      children: [
+        Text('AMOUNT',
+            style: TextStyle(
+                fontSize: 8, letterSpacing: 1.5, color: p.textMuted)),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text('RM',
+                  style: TextStyle(
+                      fontSize: pixel ? 14 : 20,
+                      color: color,
+                      fontWeight: pixel ? null : FontWeight.w600)),
+            ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 90, maxWidth: 240),
+              child: IntrinsicWidth(
+                child: TextFormField(
+                  controller: controller,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: pixel ? 22 : 34,
+                      color: color,
+                      fontWeight: pixel ? null : FontWeight.w700),
+                  decoration: const InputDecoration(
+                    hintText: '0.00',
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    filled: false,
+                    isCollapsed: true,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Amount is required';
+                    }
+                    final parsed = double.tryParse(v);
+                    if (parsed == null || parsed <= 0) {
+                      return 'Enter a valid positive amount';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+            color: color.withValues(alpha: 0.4), thickness: pixel ? 2 : 1),
+      ],
     );
   }
 }

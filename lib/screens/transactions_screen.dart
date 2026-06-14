@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/transaction_provider.dart';
+import '../models/transaction.dart';
 import '../widgets/transaction_tile.dart';
 import '../theme/app_theme.dart';
 import 'add_edit_transaction_screen.dart';
 
-class TransactionsScreen extends StatelessWidget {
+class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
+
+  @override
+  State<TransactionsScreen> createState() => _TransactionsScreenState();
+}
+
+class _TransactionsScreenState extends State<TransactionsScreen> {
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,53 +35,128 @@ class TransactionsScreen extends StatelessWidget {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
+          final p = PixelColors.of(context);
+
+          // Provider applies the type filter; we additionally apply the
+          // local text search over title + category name.
+          final q = _query.trim().toLowerCase();
+          final items = provider.transactions.where((t) {
+            if (q.isEmpty) return true;
+            final cat = provider.getCategoryById(t.categoryId);
+            return t.title.toLowerCase().contains(q) ||
+                (cat?.name.toLowerCase().contains(q) ?? false);
+          }).toList();
+
           return Column(
             children: [
+              _SearchField(
+                controller: _searchCtrl,
+                onChanged: (v) => setState(() => _query = v),
+              ),
               _FilterBar(
                 selected: provider.filterType,
                 onChanged: provider.setFilter,
               ),
               Expanded(
-                child: provider.transactions.isEmpty
-                    ? const Center(
+                child: items.isEmpty
+                    ? Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.receipt_long_outlined,
-                                size: 64, color: AppTheme.textMuted),
-                            SizedBox(height: 16),
+                                size: 64, color: p.textMuted),
+                            const SizedBox(height: 16),
                             Text(
-                              'No transactions found.',
-                              style: TextStyle(color: AppTheme.textMuted, fontSize: 16),
+                              q.isEmpty
+                                  ? 'No transactions found.'
+                                  : 'No matches for "$_query".',
+                              style:
+                                  TextStyle(color: p.textMuted, fontSize: 10),
                             ),
                           ],
                         ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 80, top: 4),
-                        itemCount: provider.transactions.length,
-                        itemBuilder: (context, i) {
-                          final tx = provider.transactions[i];
-                          final cat = provider.getCategoryById(tx.categoryId);
-                          return TransactionTile(
-                            transaction: tx,
-                            category: cat,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    AddEditTransactionScreen(transaction: tx),
-                              ),
-                            ),
-                            onDelete: () =>
-                                provider.deleteTransaction(tx.id!),
-                          );
-                        },
+                    : ListView(
+                        padding: const EdgeInsets.only(bottom: 80, top: 2),
+                        children: _buildGrouped(context, provider, items),
                       ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  /// Builds date-grouped rows (TODAY / YESTERDAY / dd MMM yyyy headers).
+  List<Widget> _buildGrouped(
+    BuildContext context,
+    TransactionProvider provider,
+    List<Transaction> items,
+  ) {
+    final p = PixelColors.of(context);
+    final widgets = <Widget>[];
+    String? lastBucket;
+    for (final tx in items) {
+      final bucket = _dateBucket(tx.date);
+      if (bucket != lastBucket) {
+        widgets.add(Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
+          child: Text(
+            bucket.toUpperCase(),
+            style: TextStyle(
+                fontSize: 9, letterSpacing: 1, color: p.textMuted),
+          ),
+        ));
+        lastBucket = bucket;
+      }
+      final cat = provider.getCategoryById(tx.categoryId);
+      widgets.add(TransactionTile(
+        transaction: tx,
+        category: cat,
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AddEditTransactionScreen(transaction: tx),
+          ),
+        ),
+        onDelete: () => provider.deleteTransaction(tx.id!),
+      ));
+    }
+    return widgets;
+  }
+
+  String _dateBucket(DateTime d) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final that = DateTime(d.year, d.month, d.day);
+    final diff = today.difference(that).inDays;
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+    return DateFormat('dd MMM yyyy').format(d);
+  }
+}
+
+class _SearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _SearchField({required this.controller, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        style: TextStyle(fontSize: p.hardShadow ? 10 : 14, color: p.textDark),
+        decoration: const InputDecoration(
+          hintText: 'Search transactions',
+          prefixIcon: Icon(Icons.search, size: 20),
+          isDense: true,
+        ),
       ),
     );
   }
@@ -79,15 +170,16 @@ class _FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          _Chip('All', 'all', selected, onChanged, Colors.blueGrey),
+          _Chip('All', 'all', selected, onChanged, p.textMuted),
           const SizedBox(width: 8),
-          _Chip('Income', 'income', selected, onChanged, AppTheme.incomeColor),
+          _Chip('Income', 'income', selected, onChanged, p.income),
           const SizedBox(width: 8),
-          _Chip('Expense', 'expense', selected, onChanged, AppTheme.expenseColor),
+          _Chip('Expense', 'expense', selected, onChanged, p.expense),
         ],
       ),
     );
@@ -105,16 +197,24 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     final isSelected = value == selected;
     return FilterChip(
-      label: Text(label),
+      label: Text(label, style: const TextStyle(fontSize: 8)),
       selected: isSelected,
       onSelected: (_) => onChanged(value),
+      showCheckmark: false,
+      backgroundColor: p.surface,
       selectedColor: color.withValues(alpha: 0.2),
-      checkmarkColor: color,
+      side: BorderSide(
+          color: isSelected
+              ? color
+              : (p.hardShadow ? p.outline : const Color(0xFFCED4DA)),
+          width: p.hardShadow ? 2 : 1),
+      shape: RoundedRectangleBorder(
+          borderRadius: p.radius == 0 ? BorderRadius.zero : BorderRadius.circular(20)),
       labelStyle: TextStyle(
-        color: isSelected ? color : AppTheme.textMuted,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+        color: isSelected ? color : p.textMuted,
       ),
     );
   }

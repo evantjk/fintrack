@@ -30,8 +30,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Statistics')),
+      appBar: AppBar(title: const Text('STATISTICS')),
       body: Consumer<TransactionProvider>(
         builder: (context, provider, _) {
           if (!_loaded) {
@@ -58,30 +59,31 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     balance: provider.balance,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Spending by Category',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: AppTheme.textDark),
+                  Text(
+                    'SPENDING BY CATEGORY',
+                    style: TextStyle(fontSize: 11, color: p.textDark),
                   ),
                   const SizedBox(height: 12),
                   if (_expenseByCategory.isEmpty)
-                    const Center(
+                    Center(
                       child: Padding(
-                        padding: EdgeInsets.all(32),
+                        padding: const EdgeInsets.all(32),
                         child: Column(
                           children: [
                             Icon(Icons.bar_chart_outlined,
-                                size: 64, color: AppTheme.textMuted),
-                            SizedBox(height: 16),
+                                size: 64, color: p.textMuted),
+                            const SizedBox(height: 16),
                             Text('No expense data yet.',
-                                style: TextStyle(color: AppTheme.textMuted)),
+                                style: TextStyle(
+                                    color: p.textMuted, fontSize: 9)),
                           ],
                         ),
                       ),
                     )
-                  else
+                  else ...[
+                    _SpendingDonut(
+                        data: _expenseByCategory, total: total),
+                    const SizedBox(height: 16),
                     ..._expenseByCategory.map((e) {
                       final amount = (e['total'] as num).toDouble();
                       final pct = total > 0 ? amount / total : 0.0;
@@ -94,6 +96,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         color: color,
                       );
                     }),
+                  ],
                   const SizedBox(height: 24),
                   _TransactionCountCard(
                     totalCount: provider.transactions.length,
@@ -124,16 +127,17 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
     return Row(
       children: [
         Expanded(
-            child: _StatCard('Income', fmt.format(income), AppTheme.incomeColor,
+            child: _StatCard('Income', fmt.format(income), p.income,
                 Icons.arrow_downward_rounded)),
         const SizedBox(width: 12),
         Expanded(
-            child: _StatCard('Expense', fmt.format(expense),
-                AppTheme.expenseColor, Icons.arrow_upward_rounded)),
+            child: _StatCard('Expense', fmt.format(expense), p.expense,
+                Icons.arrow_upward_rounded)),
       ],
     );
   }
@@ -149,29 +153,29 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, color: color, size: 18),
+                Icon(icon, color: color, size: 16),
                 const SizedBox(width: 6),
                 Text(label,
-                    style: const TextStyle(
-                        color: AppTheme.textMuted, fontSize: 13)),
+                    style: TextStyle(color: p.textMuted, fontSize: 8)),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14),
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 10),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: TextStyle(color: color, fontSize: 11),
+              ),
             ),
           ],
         ),
@@ -197,6 +201,7 @@ class _CategoryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: Padding(
@@ -205,47 +210,44 @@ class _CategoryBar extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(icon, style: const TextStyle(fontSize: 22)),
+                Text(icon, style: const TextStyle(fontSize: 20)),
                 const SizedBox(width: 10),
                 Expanded(
                     child: Text(name,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textDark))),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 9, color: p.textDark))),
                 Text(amount,
-                    style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13)),
+                    style: TextStyle(color: color, fontSize: 9)),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Stack(
               children: [
                 Container(
-                  height: 6,
+                  height: 10,
                   decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(4)),
+                      color: p.surfaceAlt,
+                      borderRadius: p.radius == 0 ? null : BorderRadius.circular(5)),
                 ),
                 FractionallySizedBox(
                   widthFactor: percentage.clamp(0.0, 1.0),
                   child: Container(
-                    height: 6,
+                    height: 10,
                     decoration: BoxDecoration(
                         color: color,
-                        borderRadius: BorderRadius.circular(4)),
+                        borderRadius:
+                            p.radius == 0 ? null : BorderRadius.circular(5)),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Align(
               alignment: Alignment.centerRight,
               child: Text(
                 '${(percentage * 100).toStringAsFixed(1)}%',
-                style: const TextStyle(
-                    fontSize: 11, color: AppTheme.textMuted),
+                style: TextStyle(fontSize: 8, color: p.textMuted),
               ),
             ),
           ],
@@ -268,23 +270,21 @@ class _TransactionCountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Transaction Overview',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: AppTheme.textDark)),
-            const Divider(height: 24),
-            _CountRow('Total Transactions', totalCount, Colors.blueGrey),
-            const SizedBox(height: 8),
-            _CountRow('Income Entries', incomeCount, AppTheme.incomeColor),
-            const SizedBox(height: 8),
-            _CountRow('Expense Entries', expenseCount, AppTheme.expenseColor),
+            Text('TRANSACTION OVERVIEW',
+                style: TextStyle(fontSize: 10, color: p.textDark)),
+            Divider(height: 24, color: p.outline),
+            _CountRow('Total Transactions', totalCount, p.textMuted),
+            const SizedBox(height: 10),
+            _CountRow('Income Entries', incomeCount, p.income),
+            const SizedBox(height: 10),
+            _CountRow('Expense Entries', expenseCount, p.expense),
           ],
         ),
       ),
@@ -301,22 +301,123 @@ class _CountRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: AppTheme.textMuted)),
+        Expanded(
+          child: Text(label,
+              style: TextStyle(color: p.textMuted, fontSize: 9, height: 1.4)),
+        ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20)),
+              color: color.withValues(alpha: 0.15),
+              borderRadius: p.radius == 0 ? null : BorderRadius.circular(20),
+              border: Border.all(
+                  color: color, width: p.hardShadow ? 1.5 : 0)),
           child: Text('$count',
-              style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13)),
+              style: TextStyle(color: color, fontSize: 9)),
         ),
       ],
     );
   }
+}
+
+/// Donut chart of spending by category. Drawn with a CustomPainter so it needs
+/// no extra chart dependency, and reads theme tokens for the track colour.
+class _SpendingDonut extends StatelessWidget {
+  final List<Map<String, dynamic>> data;
+  final double total;
+
+  const _SpendingDonut({required this.data, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
+    final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
+    final segments = [
+      for (final e in data)
+        _DonutSeg((e['total'] as num).toDouble(), Color(e['color_value'] as int))
+    ];
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: SizedBox(
+            height: 180,
+            width: 180,
+            child: CustomPaint(
+              painter: _DonutPainter(segments: segments, trackColor: p.surfaceAlt),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('TOTAL SPENT',
+                        style: TextStyle(
+                            fontSize: 8,
+                            letterSpacing: 1,
+                            color: p.textMuted)),
+                    const SizedBox(height: 6),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(fmt.format(total),
+                          style: TextStyle(fontSize: 13, color: p.textDark)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DonutSeg {
+  final double value;
+  final Color color;
+  const _DonutSeg(this.value, this.color);
+}
+
+class _DonutPainter extends CustomPainter {
+  final List<_DonutSeg> segments;
+  final Color trackColor;
+
+  _DonutPainter({required this.segments, required this.trackColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const stroke = 24.0;
+    final rect = Rect.fromCircle(
+      center: size.center(Offset.zero),
+      radius: (size.shortestSide - stroke) / 2,
+    );
+    final track = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..color = trackColor;
+    canvas.drawArc(rect, 0, 6.2831853, false, track);
+
+    final total = segments.fold<double>(0, (s, e) => s + e.value);
+    if (total <= 0) return;
+
+    const gap = 0.05; // small radial gap between slices
+    double start = -1.5707963; // start at top (12 o'clock)
+    for (final seg in segments) {
+      final sweep = (seg.value / total) * 6.2831853;
+      final paint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..color = seg.color;
+      final pad = sweep > gap ? gap / 2 : 0.0;
+      canvas.drawArc(rect, start + pad, sweep - pad * 2, false, paint);
+      start += sweep;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DonutPainter old) =>
+      old.segments != segments || old.trackColor != trackColor;
 }
