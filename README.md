@@ -12,7 +12,7 @@ locally on the device so the data survives app restarts.
 
 ---
 
-## ✨ Features
+Features
 
 - **Dashboard** — total balance, a computed "% saved" indicator, income/expense
   summary, quick-add actions, and recent activity.
@@ -29,7 +29,7 @@ locally on the device so the data survives app restarts.
   (clean Material), **Gundam** and **Hello Kitty** (retro pixel), and
   **Luxury — "Old Money"** (elegant serif). One widget set renders every theme.
 
-## 📱 Screenshots
+📱 Screenshots
 
 | Dashboard (Original) | Dashboard (Luxury) | Statistics |
 |---|---|---|
@@ -50,7 +50,7 @@ locally on the device so the data survives app restarts.
 | Theming | Custom `ThemeExtension` (`PixelColors`) + style-knobs |
 | Charts / mascots | Hand-written `CustomPainter` (no chart dependency) |
 
-## 🏗 Architecture
+🏗 Architecture
 
 FinTrack follows a layered structure with clear separation of concerns:
 
@@ -99,9 +99,9 @@ Themes are not just colour swaps. `app_theme.dart` exposes a `PixelColors`
 Any new UI must read these tokens (never hard-code colours/fonts) so all themes
 keep working.
 
-## 🚀 Getting Started
+🚀 Getting Started
 
-### Prerequisites
+Prerequisites
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (Dart SDK `^3.12`)
 - Android Studio / Xcode, or an Android emulator / physical device
 
@@ -122,15 +122,14 @@ Build a release APK
 ```bash
 flutter build apk --release
 ```
-
-## ✅ Quality
+✅ Quality
 
 ```bash
 flutter analyze   # static analysis (currently: no issues)
 flutter test      # unit / widget tests
 ```
 
-## 📁 Data model
+📁 Data model
 
 | Entity | Key fields |
 |---|---|
@@ -140,7 +139,7 @@ flutter test      # unit / widget tests
 Stored in a local SQLite database (`fintrack.db`) and aggregated on the fly for
 balance, totals, and per-category statistics.
 
-## 🙏 Acknowledgements & References
+References
 
 - [Flutter](https://flutter.dev) & [Dart](https://dart.dev)
 - Packages: `provider`, `sqflite`, `intl`, `path`, `uuid`
