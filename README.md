@@ -1,4 +1,4 @@
-# FinTrack — Personal Finance Tracker
+FinTrack — Personal Finance Tracker
 
 A Flutter mobile application for tracking personal income and expenses in
 Malaysian Ringgit (RM). Built for **CSC2074 Mobile Application Development**
@@ -39,7 +39,7 @@ locally on the device so the data survives app restarts.
 |---|---|---|
 | ![Transactions](docs/screenshots/transactions.png) | ![Add](docs/screenshots/add_transaction.png) | ![Categories](docs/screenshots/categories.png) |
 
-## 🛠 Tech Stack
+🛠 Tech Stack
 
 | Concern | Choice |
 |---|---|
@@ -84,7 +84,7 @@ lib/
 (SQLite). Widgets read theme tokens via `PixelColors.of(context)` and rebuild
 when the provider notifies a change.
 
-## 🎨 Theming engine
+🎨 Theming engine
 
 Themes are not just colour swaps. `app_theme.dart` exposes a `PixelColors`
 `ThemeExtension` carrying both **role colours** (`income`, `expense`, `accent`,
@@ -118,7 +118,7 @@ flutter pub get
 flutter run
 ```
 
-### Build a release APK
+Build a release APK
 ```bash
 flutter build apk --release
 ```
