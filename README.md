@@ -148,7 +148,3 @@ balance, totals, and per-category statistics.
   [EB Garamond](https://fonts.google.com/specimen/EB+Garamond) (SIL OFL)
 - UI design exploration assisted by **Google Stitch**; development assisted with
   AI tooling. (Disclosed per academic-honesty guidance.)
-
----
-
-*CSC2074 Mobile Application Development — Group Project, April 2026 session.*
