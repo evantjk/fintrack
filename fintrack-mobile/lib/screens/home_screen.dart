@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/theme_switcher.dart';
@@ -86,6 +87,30 @@ class _HomeScreenState extends State<HomeScreen> {
 class _DashboardTab extends StatelessWidget {
   const _DashboardTab();
 
+  Future<void> _confirmLogout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Log out?'),
+        content: const Text('You can sign back in any time.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+    if (shouldLogout == true && context.mounted) {
+      // The auth gate listens to authStateChanges() and returns to login.
+      await context.read<AuthProvider>().signOut();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = PixelColors.of(context);
@@ -105,6 +130,11 @@ class _DashboardTab extends StatelessWidget {
             tooltip: 'Switch theme',
             icon: const Icon(Icons.palette_outlined),
             onPressed: () => showThemeSwitcher(context),
+          ),
+          IconButton(
+            tooltip: 'Log out',
+            icon: const Icon(Icons.logout),
+            onPressed: () => _confirmLogout(context),
           ),
         ],
       ),

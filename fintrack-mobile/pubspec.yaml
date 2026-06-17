@@ -36,6 +36,8 @@ dependencies:
   path: ^1.9.0
   intl: ^0.19.0
   uuid: ^4.4.2
+  firebase_core: ^4.10.0
+  firebase_auth: ^6.5.2
 
 dev_dependencies:
   flutter_test:
@@ -54,6 +56,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/images/
 
   # Retro pixel font used by the Gundam / Hello Kitty themes.
   fonts:
