@@ -22,8 +22,10 @@ class FinTrackApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // Data is loaded per-user once the auth gate signs someone in
+        // (see AuthGate -> setUser), so we don't load anything up front.
         ChangeNotifierProvider(
-          create: (_) => TransactionProvider()..loadAll(),
+          create: (_) => TransactionProvider(),
         ),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),

@@ -3,10 +3,7 @@
 // The real app entry (FinTrackApp) now boots Firebase and shows an auth gate,
 // which can't run in a plain widget test without mocking Firebase. So this test
 // mounts HomeScreen directly inside the same provider + theme setup the app
-// uses, which still exercises TransactionProvider.loadAll() against sqflite.
-//
-// initTestDatabase() points sqflite at the FFI backend so this runs in the Dart
-// test environment rather than on a device.
+// uses, with an in-memory repository standing in for Firestore.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,20 +12,18 @@ import 'package:fintrack/providers/transaction_provider.dart';
 import 'package:fintrack/providers/theme_provider.dart';
 import 'package:fintrack/providers/auth_provider.dart';
 import 'package:fintrack/screens/home_screen.dart';
+import 'package:fintrack/services/in_memory_repository.dart';
 import 'package:fintrack/theme/app_theme.dart';
 
-import 'helpers.dart';
-
 void main() {
-  setUpAll(() async {
-    await initTestDatabase();
-  });
-
   testWidgets('home screen renders', (tester) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => TransactionProvider()..loadAll()),
+          ChangeNotifierProvider(
+            create: (_) =>
+                TransactionProvider(InMemoryRepository())..loadAll(),
+          ),
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
           ChangeNotifierProvider(create: (_) => AuthProvider()),
         ],

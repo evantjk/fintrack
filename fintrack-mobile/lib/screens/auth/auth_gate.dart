@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import '../../providers/auth_provider.dart';
+import '../../providers/transaction_provider.dart';
 import '../home_screen.dart';
 import 'login_screen.dart';
 
@@ -26,9 +27,20 @@ class AuthGate extends StatelessWidget {
         }
         // Also re-check the live currentUser so a just-signed-out user can't
         // slip through on a stale stream event.
-        final signedIn =
-            snapshot.hasData && FirebaseAuth.instance.currentUser != null;
-        if (signedIn && !registering) {
+        final user = FirebaseAuth.instance.currentUser;
+        final signedIn = snapshot.hasData && user != null;
+        final ready = signedIn && !registering;
+
+        // Bind the transaction data to this user (or clear it on sign-out).
+        // setUser() ignores repeat calls for the same uid, so running it after
+        // every rebuild is cheap. Deferred to a post-frame callback so we don't
+        // mutate the provider during build.
+        final uid = ready ? user.uid : null;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          context.read<TransactionProvider>().setUser(uid);
+        });
+
+        if (ready) {
           return const HomeScreen();
         }
         return const LoginScreen();

@@ -2,15 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fintrack/models/transaction.dart';
 import 'package:fintrack/models/category.dart';
 import 'package:fintrack/providers/transaction_provider.dart';
-import 'package:fintrack/services/database_service.dart';
-
-import 'helpers.dart';
+import 'package:fintrack/services/in_memory_repository.dart';
 
 void main() {
   // Build a transaction with sensible defaults for the field under test.
   Transaction makeTx({
     required double amount,
-    required int categoryId,
+    required String categoryId,
     required String type,
     String title = 'Test',
   }) =>
@@ -22,18 +20,10 @@ void main() {
         type: type,
       );
 
-  setUpAll(() async {
-    await initTestDatabase();
-  });
-
-  // Start every test from a clean transactions table (categories stay seeded).
-  setUp(() async {
-    final db = await DatabaseService().database;
-    await db.delete('transactions');
-  });
-
+  // Each test gets its own in-memory repository, so they start from the seeded
+  // default categories with no transactions and never touch Firebase.
   Future<TransactionProvider> loadedProvider() async {
-    final p = TransactionProvider();
+    final p = TransactionProvider(InMemoryRepository());
     await p.loadAll();
     return p;
   }
@@ -155,6 +145,22 @@ void main() {
     final row = byCategory.firstWhere((e) => e['name'] == cat.name);
 
     expect((row['total'] as num).toDouble(), 50);
+  });
+
+  test('data is isolated per user (separate repositories)', () async {
+    // Simulates two accounts: each provider is bound to its own repository, so
+    // one user's transactions never appear for the other.
+    final alice = TransactionProvider(InMemoryRepository());
+    final bob = TransactionProvider(InMemoryRepository());
+    await alice.loadAll();
+    await bob.loadAll();
+
+    await alice.addTransaction(makeTx(
+        amount: 999, categoryId: alice.incomeCategories.first.id!, type: 'income'));
+
+    expect(alice.transactions.length, 1);
+    expect(bob.transactions, isEmpty);
+    expect(bob.totalIncome, 0);
   });
 
   test('category CRUD: add, update and delete a category', () async {
