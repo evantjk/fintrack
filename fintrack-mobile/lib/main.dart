@@ -5,6 +5,7 @@ import 'firebase_options.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/auth_provider.dart';
+import 'routes/app_router.dart';
 import 'screens/auth/auth_gate.dart';
 
 Future<void> main() async {
@@ -36,7 +37,12 @@ class FinTrackApp extends StatelessWidget {
             title: 'FinTrack',
             debugShowCheckedModeBanner: false,
             theme: themeProvider.themeData,
+            // AuthGate stays the home screen: it reactively shows login vs
+            // home based on Firebase's auth stream. All in-app navigation
+            // (sign-up, forgot-password, the transaction form) goes through
+            // named routes resolved by AppRouter.onGenerateRoute.
             home: const AuthGate(),
+            onGenerateRoute: AppRouter.onGenerateRoute,
           );
         },
       ),
