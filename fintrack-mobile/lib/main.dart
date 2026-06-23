@@ -13,7 +13,13 @@ import 'screens/auth/auth_gate.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const FinTrackApp());
+  runApp(
+    DevicePreview(
+      // Automatically disable DevicePreview if you build for production
+      enabled: !kReleaseMode,
+      builder: (context) => const FinTrackApp(),
+    ),
+  );
 }
 
 class FinTrackApp extends StatelessWidget {

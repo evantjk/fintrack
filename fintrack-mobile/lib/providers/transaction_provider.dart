@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart' hide Category;
 import '../models/transaction.dart';
 import '../models/category.dart';
 import '../services/finance_repository.dart';
-import '../services/firestore_repository.dart';
+import '../services/http_repository.dart';
 
 /// Holds the signed-in user's transactions and categories in memory and keeps
-/// them in sync with a per-user [FinanceRepository] (Firestore in the app).
+/// them in sync with a per-user [FinanceRepository] (fintrack-api in the app).
 ///
 /// Call [setUser] whenever the signed-in user changes: it rebinds the provider
 /// to that user's data so each account sees only its own transactions. Pass a
@@ -62,7 +62,7 @@ class TransactionProvider extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    _repo = _injected ?? FirestoreRepository(uid);
+    _repo = _injected ?? HttpRepository();
     await loadAll();
   }
 

@@ -4,3 +4,4 @@ __pycache__/
 .env
 serviceAccountKey.json
 *-firebase-adminsdk-*.json
+*.log
