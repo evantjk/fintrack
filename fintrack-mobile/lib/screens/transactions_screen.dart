@@ -5,7 +5,7 @@ import '../providers/transaction_provider.dart';
 import '../models/transaction.dart';
 import '../widgets/transaction_tile.dart';
 import '../theme/app_theme.dart';
-import 'add_edit_transaction_screen.dart';
+import '../routes/app_routes.dart';
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -114,11 +114,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       widgets.add(TransactionTile(
         transaction: tx,
         category: cat,
-        onTap: () => Navigator.push(
+        onTap: () => Navigator.pushNamed(
           context,
-          MaterialPageRoute(
-            builder: (_) => AddEditTransactionScreen(transaction: tx),
-          ),
+          AppRoutes.transactionForm,
+          arguments: TransactionArgs(transaction: tx),
         ),
         onDelete: () => provider.deleteTransaction(tx.id!),
       ));

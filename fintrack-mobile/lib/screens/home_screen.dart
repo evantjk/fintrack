@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/theme_switcher.dart';
 import '../widgets/mascots.dart';
 import '../theme/app_theme.dart';
-import 'add_edit_transaction_screen.dart';
+import '../routes/app_routes.dart';
 import 'transactions_screen.dart';
 import 'statistics_screen.dart';
 import 'categories_screen.dart';
@@ -21,18 +22,21 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    _DashboardTab(),
-    TransactionsScreen(),
-    StatisticsScreen(),
-    CategoriesScreen(),
-  ];
+  void _goToTab(int index) => setState(() => _currentIndex = index);
 
   @override
   Widget build(BuildContext context) {
     final p = PixelColors.of(context);
+    // Built here (not a const field) so the dashboard can receive a callback
+    // to switch tabs — e.g. its "SEE ALL" button jumps to the Transactions tab.
+    final pages = [
+      _DashboardTab(onSeeAll: () => _goToTab(1)),
+      const TransactionsScreen(),
+      const StatisticsScreen(),
+      const CategoriesScreen(),
+    ];
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
@@ -76,15 +80,39 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openAddTransaction(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AddEditTransactionScreen()),
-    );
+    Navigator.pushNamed(context, AppRoutes.transactionForm);
   }
 }
 
 class _DashboardTab extends StatelessWidget {
-  const _DashboardTab();
+  /// Called when the user taps "SEE ALL" — jumps to the Transactions tab.
+  final VoidCallback onSeeAll;
+
+  const _DashboardTab({required this.onSeeAll});
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Log out?'),
+        content: const Text('You can sign back in any time.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+    if (shouldLogout == true && context.mounted) {
+      // The auth gate listens to authStateChanges() and returns to login.
+      await context.read<AuthProvider>().signOut();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +133,11 @@ class _DashboardTab extends StatelessWidget {
             tooltip: 'Switch theme',
             icon: const Icon(Icons.palette_outlined),
             onPressed: () => showThemeSwitcher(context),
+          ),
+          IconButton(
+            tooltip: 'Log out',
+            icon: const Icon(Icons.logout),
+            onPressed: () => _confirmLogout(context),
           ),
         ],
       ),
@@ -136,7 +169,7 @@ class _DashboardTab extends StatelessWidget {
                           style: TextStyle(fontSize: 11, color: p.textDark),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: onSeeAll,
                           child: const Text('SEE ALL'),
                         ),
                       ],
@@ -168,12 +201,10 @@ class _DashboardTab extends StatelessWidget {
                       return TransactionTile(
                         transaction: tx,
                         category: cat,
-                        onTap: () => Navigator.push(
+                        onTap: () => Navigator.pushNamed(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                AddEditTransactionScreen(transaction: tx),
-                          ),
+                          AppRoutes.transactionForm,
+                          arguments: TransactionArgs(transaction: tx),
                         ),
                         onDelete: () =>
                             provider.deleteTransaction(tx.id!),
@@ -205,12 +236,10 @@ class _QuickActions extends StatelessWidget {
               label: 'INCOME',
               icon: Icons.add_circle_outline,
               color: p.income,
-              onTap: () => Navigator.push(
+              onTap: () => Navigator.pushNamed(
                 context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const AddEditTransactionScreen(initialType: 'income'),
-                ),
+                AppRoutes.transactionForm,
+                arguments: const TransactionArgs(initialType: 'income'),
               ),
             ),
           ),
@@ -220,12 +249,10 @@ class _QuickActions extends StatelessWidget {
               label: 'EXPENSE',
               icon: Icons.remove_circle_outline,
               color: p.expense,
-              onTap: () => Navigator.push(
+              onTap: () => Navigator.pushNamed(
                 context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const AddEditTransactionScreen(initialType: 'expense'),
-                ),
+                AppRoutes.transactionForm,
+                arguments: const TransactionArgs(initialType: 'expense'),
               ),
             ),
           ),

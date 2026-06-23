@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "546170440201",
+    "project_id": "mobile-development-b86da",
+    "storage_bucket": "mobile-development-b86da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546170440201:android:658ef7f99ac5dcbce2c6d8",
+        "android_client_info": {
+          "package_name": "com.sunway.fintrack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546170440201-4cover8do8loivnj12r9h11elup6p6tj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sunway.fintrack",
+            "certificate_hash": "f120e0ce69eaba1b475b6c2a7e7dbc6596c93649"
+          }
+        },
+        {
+          "client_id": "546170440201-gctotikj4trkr1eljvf29i7jemcefl79.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUJAba1TBfIHAaT9_8SSARoOFfTx-OJWY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546170440201-gctotikj4trkr1eljvf29i7jemcefl79.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
