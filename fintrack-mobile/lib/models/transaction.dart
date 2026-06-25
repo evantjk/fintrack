@@ -1,9 +1,10 @@
 class Transaction {
-  final int? id;
+  /// Firestore document id. Null for a transaction that hasn't been saved yet.
+  final String? id;
   final String title;
   final double amount;
   final DateTime date;
-  final int categoryId;
+  final String categoryId;
   final String type; // 'income' or 'expense'
   final String? note;
 
@@ -18,11 +19,11 @@ class Transaction {
   });
 
   Transaction copyWith({
-    int? id,
+    String? id,
     String? title,
     double? amount,
     DateTime? date,
-    int? categoryId,
+    String? categoryId,
     String? type,
     String? note,
   }) {
@@ -37,9 +38,10 @@ class Transaction {
     );
   }
 
+  /// Document fields only — the id is the Firestore document id, stored
+  /// separately, so it is never part of the map.
   Map<String, dynamic> toMap() {
     return {
-      if (id != null) 'id': id,
       'title': title,
       'amount': amount,
       'date': date.toIso8601String(),
@@ -49,13 +51,13 @@ class Transaction {
     };
   }
 
-  factory Transaction.fromMap(Map<String, dynamic> map) {
+  factory Transaction.fromMap(String id, Map<String, dynamic> map) {
     return Transaction(
-      id: map['id'] as int?,
+      id: id,
       title: map['title'] as String,
       amount: (map['amount'] as num).toDouble(),
       date: DateTime.parse(map['date'] as String),
-      categoryId: map['category_id'] as int,
+      categoryId: map['category_id'] as String,
       type: map['type'] as String,
       note: map['note'] as String?,
     );
