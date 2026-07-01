@@ -6,32 +6,35 @@ void main() {
   group('Transaction model', () {
     test('toMap / fromMap round-trips all fields', () {
       final tx = Transaction(
-        id: 7,
+        id: 'tx7',
         title: 'Lunch',
         amount: 12.50,
         date: DateTime(2026, 6, 14, 13, 30),
-        categoryId: 5,
+        categoryId: 'cat5',
         type: 'expense',
         note: 'Nasi lemak',
       );
 
-      final restored = Transaction.fromMap(tx.toMap());
+      // The document id lives outside the map (it is the Firestore doc id), so
+      // it is supplied separately when reconstructing.
+      final restored = Transaction.fromMap(tx.id!, tx.toMap());
 
-      expect(restored.id, 7);
+      expect(restored.id, 'tx7');
       expect(restored.title, 'Lunch');
       expect(restored.amount, 12.50);
       expect(restored.date, DateTime(2026, 6, 14, 13, 30));
-      expect(restored.categoryId, 5);
+      expect(restored.categoryId, 'cat5');
       expect(restored.type, 'expense');
       expect(restored.note, 'Nasi lemak');
     });
 
-    test('toMap omits a null id (so SQLite can auto-increment)', () {
+    test('toMap never contains the id (it is the document id)', () {
       final tx = Transaction(
+        id: 'tx1',
         title: 'Coffee',
         amount: 5,
         date: DateTime(2026, 1, 1),
-        categoryId: 1,
+        categoryId: 'cat1',
         type: 'expense',
       );
       expect(tx.toMap().containsKey('id'), isFalse);
@@ -39,11 +42,11 @@ void main() {
 
     test('copyWith overrides only the given fields', () {
       final tx = Transaction(
-        id: 1,
+        id: 'tx1',
         title: 'Salary',
         amount: 5000,
         date: DateTime(2026, 6, 1),
-        categoryId: 2,
+        categoryId: 'cat2',
         type: 'income',
       );
 
@@ -54,23 +57,23 @@ void main() {
       // Unchanged fields are preserved.
       expect(edited.title, 'Salary');
       expect(edited.type, 'income');
-      expect(edited.categoryId, 2);
+      expect(edited.categoryId, 'cat2');
     });
   });
 
   group('Category model', () {
     test('toMap / fromMap round-trips all fields', () {
       final cat = Category(
-        id: 3,
+        id: 'cat3',
         name: 'Food',
         icon: '🍔',
         colorValue: 0xFFF44336,
         type: 'expense',
       );
 
-      final restored = Category.fromMap(cat.toMap());
+      final restored = Category.fromMap(cat.id!, cat.toMap());
 
-      expect(restored.id, 3);
+      expect(restored.id, 'cat3');
       expect(restored.name, 'Food');
       expect(restored.icon, '🍔');
       expect(restored.colorValue, 0xFFF44336);
@@ -79,7 +82,7 @@ void main() {
 
     test('copyWith overrides only the given fields', () {
       final cat = Category(
-        id: 1,
+        id: 'cat1',
         name: 'Transport',
         icon: '🚗',
         colorValue: 0xFF607D8B,
