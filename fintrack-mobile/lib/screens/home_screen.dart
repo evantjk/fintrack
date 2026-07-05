@@ -11,6 +11,7 @@ import '../routes/app_routes.dart';
 import 'transactions_screen.dart';
 import 'statistics_screen.dart';
 import 'categories_screen.dart';
+import 'ai_insights_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const TransactionsScreen(),
       const StatisticsScreen(),
       const CategoriesScreen(),
+      const AiInsightsScreen(),
     ];
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: pages),
@@ -66,6 +68,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.category_outlined),
                 selectedIcon: Icon(Icons.category),
                 label: 'Categories'),
+            NavigationDestination(
+                icon: Icon(Icons.auto_awesome_outlined),
+                selectedIcon: Icon(Icons.auto_awesome),
+                label: 'Insights'),
           ],
         ),
       ),
