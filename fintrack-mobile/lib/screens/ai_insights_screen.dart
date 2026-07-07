@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/transaction_provider.dart';
 import '../services/insights_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/mascots.dart';
 
 /// A simple, on-device "AI analysis" of the user's spending — a handful of
 /// rule-based observations (savings rate, top category, month-over-month
@@ -22,10 +24,12 @@ class AiInsightsScreen extends StatelessWidget {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
+          final all = provider.allTransactions;
           final insights = InsightsService.generate(
-            transactions: provider.transactions,
+            transactions: all,
             categories: provider.categories,
           );
+
           return RefreshIndicator(
             onRefresh: () => provider.loadAll(),
             child: SingleChildScrollView(
@@ -34,45 +38,45 @@ class AiInsightsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.auto_awesome, color: p.accent, size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Based on your ${provider.transactions.length} '
-                          'recorded transaction'
-                          '${provider.transactions.length == 1 ? '' : 's'}, '
-                          'calculated on your device.',
+                  if (all.isEmpty)
+                    _EmptyState(p: p)
+                  else ...[
+                    _HealthScoreCard(
+                      score: InsightsService.computeHealthScore(
+                          transactions: all),
+                      income: provider.totalIncome,
+                      expense: provider.totalExpense,
+                    ),
+                    const SizedBox(height: 16),
+                    _SpendingTrendCard(
+                      series: InsightsService.dailyExpenseSeries(
+                          transactions: all),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Icon(Icons.auto_awesome, color: p.accent, size: 14),
+                        const SizedBox(width: 6),
+                        Text(
+                          'INSIGHTS · ${insights.length}',
                           style: TextStyle(
-                              color: p.textMuted, fontSize: 8, height: 1.5),
+                              color: p.textDark,
+                              fontSize: 10,
+                              letterSpacing: 0.5),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (provider.transactions.isEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
-                          children: [
-                            Icon(Icons.auto_awesome_outlined,
-                                size: 64, color: p.textMuted),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Add some transactions to get your first '
-                              'insights.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: p.textMuted, fontSize: 9, height: 1.6),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Based on your ${all.length} recorded transaction'
+                      '${all.length == 1 ? '' : 's'}, calculated on your '
+                      'device.',
+                      style:
+                          TextStyle(color: p.textMuted, fontSize: 8, height: 1.5),
+                    ),
+                    const SizedBox(height: 12),
                     ...insights.map((i) => _InsightCard(insight: i)),
+                  ],
                 ],
               ),
             ),
@@ -81,6 +85,341 @@ class AiInsightsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class _EmptyState extends StatelessWidget {
+  final PixelColors p;
+  const _EmptyState({required this.p});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            Icon(Icons.auto_awesome_outlined, size: 64, color: p.textMuted),
+            const SizedBox(height: 16),
+            Text(
+              'Add some transactions to get your first insights.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: p.textMuted, fontSize: 9, height: 1.6),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Headline card: a blended 0-100 "financial health" reading plus the raw
+/// income/expense numbers it was built from, so the score is never a black
+/// box.
+class _HealthScoreCard extends StatelessWidget {
+  final HealthScore score;
+  final double income;
+  final double expense;
+
+  const _HealthScoreCard(
+      {required this.score, required this.income, required this.expense});
+
+  Color _scoreColor(PixelColors p) {
+    switch (score.sentiment) {
+      case InsightSentiment.positive:
+        return p.income;
+      case InsightSentiment.warning:
+        return p.expense;
+      case InsightSentiment.neutral:
+        return p.accent;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
+    final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
+    final bool square = p.radius == 0;
+    final color = _scoreColor(p);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [p.gradientStart, p.gradientEnd],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: square ? BorderRadius.zero : BorderRadius.circular(24),
+        border: p.box(p.outline, p.borderWidth == 0 ? 0 : 3),
+        boxShadow: p.shadow(p.hardShadow ? p.outline : p.gradientEnd),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -6,
+            right: -6,
+            child: Opacity(
+              opacity: 0.16,
+              child: ThemeMascot(size: 88, outline: Colors.white),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'FINANCIAL HEALTH SCORE',
+                style: TextStyle(
+                    color: Colors.white70, fontSize: 9, letterSpacing: 1),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${score.score}',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 34,
+                        height: 1,
+                        fontWeight: FontWeight.w700),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 4, left: 2),
+                    child: Text('/100',
+                        style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  ),
+                  const SizedBox(width: 10),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius:
+                            square ? BorderRadius.zero : BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.35),
+                            width: p.hardShadow ? 1.5 : 1),
+                      ),
+                      child: Text(
+                        score.label.toUpperCase(),
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 8, letterSpacing: 0.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius:
+                    square ? BorderRadius.zero : BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: score.score / 100,
+                  minHeight: 8,
+                  backgroundColor: Colors.white.withValues(alpha: 0.18),
+                  valueColor: AlwaysStoppedAnimation(color),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: _MiniStat(
+                      label: 'INCOME',
+                      value: fmt.format(income),
+                      icon: Icons.arrow_downward_rounded,
+                      color: const Color(0xFF69F0AE),
+                      square: square,
+                      pixel: p.hardShadow,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _MiniStat(
+                      label: 'EXPENSE',
+                      value: fmt.format(expense),
+                      icon: Icons.arrow_upward_rounded,
+                      color: const Color(0xFFFF8A80),
+                      square: square,
+                      pixel: p.hardShadow,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final bool square;
+  final bool pixel;
+
+  const _MiniStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.square,
+    required this.pixel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = square ? BorderRadius.zero : BorderRadius.circular(12);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: radius,
+        border: Border.all(
+            color: Colors.white.withValues(alpha: 0.22),
+            width: pixel ? 1.5 : 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.22),
+              borderRadius: radius,
+            ),
+            child: Icon(icon, color: color, size: 14),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: const TextStyle(color: Colors.white70, fontSize: 7)),
+                const SizedBox(height: 4),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(value,
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 10)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 14-day daily-expense bar chart, drawn with a CustomPainter (same approach
+/// as the statistics screen's donut) so no chart dependency is needed.
+class _SpendingTrendCard extends StatelessWidget {
+  final List<double> series;
+
+  const _SpendingTrendCard({required this.series});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
+    final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
+    final total = series.fold<double>(0, (s, v) => s + v);
+    final activeDays = series.where((v) => v > 0).length;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('LAST 14 DAYS',
+                    style: TextStyle(
+                        fontSize: 10, color: p.textDark, letterSpacing: 0.5)),
+                Text(fmt.format(total),
+                    style: TextStyle(fontSize: 10, color: p.expense)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              total > 0
+                  ? 'Spent on $activeDays of the last 14 days.'
+                  : 'No spending logged in the last 14 days.',
+              style: TextStyle(fontSize: 8, color: p.textMuted),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              height: 72,
+              width: double.infinity,
+              child: CustomPaint(
+                painter: _TrendPainter(
+                  series: series,
+                  barColor: p.expense,
+                  trackColor: p.surfaceAlt,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TrendPainter extends CustomPainter {
+  final List<double> series;
+  final Color barColor;
+  final Color trackColor;
+
+  _TrendPainter(
+      {required this.series, required this.barColor, required this.trackColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (series.isEmpty) return;
+    final maxVal = series.fold<double>(0, (m, v) => v > m ? v : m);
+    final n = series.length;
+    const gap = 4.0;
+    final barWidth = (size.width - gap * (n - 1)) / n;
+
+    for (var i = 0; i < n; i++) {
+      final v = series[i];
+      final ratio = maxVal > 0 ? (v / maxVal) : 0.0;
+      final barHeight = (size.height * ratio).clamp(2.0, size.height);
+      final left = i * (barWidth + gap);
+      final top = size.height - barHeight;
+
+      final trackRect = Rect.fromLTWH(left, 0, barWidth, size.height);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(trackRect, const Radius.circular(3)),
+        Paint()..color = trackColor,
+      );
+
+      if (v > 0) {
+        final barRect = Rect.fromLTWH(left, top, barWidth, barHeight);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(barRect, const Radius.circular(3)),
+          Paint()..color = barColor,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrendPainter old) =>
+      old.series != series ||
+      old.barColor != barColor ||
+      old.trackColor != trackColor;
 }
 
 class _InsightCard extends StatelessWidget {
@@ -99,38 +438,87 @@ class _InsightCard extends StatelessWidget {
     }
   }
 
+  String _sentimentLabel() {
+    switch (insight.sentiment) {
+      case InsightSentiment.positive:
+        return 'GOOD';
+      case InsightSentiment.warning:
+        return 'WATCH';
+      case InsightSentiment.neutral:
+        return 'FYI';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = PixelColors.of(context);
     final color = _sentimentColor(p);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.14),
-                shape: p.hardShadow ? BoxShape.rectangle : BoxShape.circle,
-                border: Border.all(color: color, width: p.hardShadow ? 2 : 1.5),
-              ),
-              child: Icon(insight.icon, color: color, size: 18),
-            ),
-            const SizedBox(width: 12),
+            Container(width: 4, color: color),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(insight.title,
-                      style: TextStyle(fontSize: 10, color: p.textDark)),
-                  const SizedBox(height: 6),
-                  Text(insight.message,
-                      style: TextStyle(
-                          fontSize: 9, color: p.textMuted, height: 1.5)),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.14),
+                        shape:
+                            p.hardShadow ? BoxShape.rectangle : BoxShape.circle,
+                        border: Border.all(
+                            color: color, width: p.hardShadow ? 2 : 1.5),
+                      ),
+                      child: Icon(insight.icon, color: color, size: 18),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(insight.title,
+                                    style: TextStyle(
+                                        fontSize: 10, color: p.textDark)),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.14),
+                                  borderRadius: p.radius == 0
+                                      ? null
+                                      : BorderRadius.circular(20),
+                                  border: Border.all(
+                                      color: color,
+                                      width: p.hardShadow ? 1 : 0),
+                                ),
+                                child: Text(_sentimentLabel(),
+                                    style: TextStyle(
+                                        fontSize: 7,
+                                        letterSpacing: 0.5,
+                                        color: color)),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(insight.message,
+                              style: TextStyle(
+                                  fontSize: 9, color: p.textMuted, height: 1.5)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
