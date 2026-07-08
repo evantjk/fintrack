@@ -146,6 +146,32 @@ class _DashboardTab extends StatelessWidget {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (provider.loadError != null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.wifi_off_outlined, size: 48),
+                    const SizedBox(height: 16),
+                    const Text('Could not reach the server.',
+                        style: TextStyle(fontSize: 12)),
+                    const SizedBox(height: 8),
+                    Text('Make sure fintrack-api is running on localhost:8000',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 9, color: Colors.grey)),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () => provider.loadAll(),
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
           return RefreshIndicator(
             onRefresh: () => provider.loadAll(),
             child: SingleChildScrollView(

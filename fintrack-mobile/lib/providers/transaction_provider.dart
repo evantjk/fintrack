@@ -66,17 +66,26 @@ class TransactionProvider extends ChangeNotifier {
     await loadAll();
   }
 
+  String? _loadError;
+  String? get loadError => _loadError;
+
   Future<void> loadAll() async {
     final repo = _repo;
     if (repo == null) return;
     _isLoading = true;
+    _loadError = null;
     notifyListeners();
-    await repo.ensureSeeded();
-    _transactions = await repo.getTransactions();
-    _categories = await repo.getCategories();
-    _recomputeTotals();
-    _isLoading = false;
-    notifyListeners();
+    try {
+      await repo.ensureSeeded();
+      _transactions = await repo.getTransactions();
+      _categories = await repo.getCategories();
+      _recomputeTotals();
+    } catch (e) {
+      _loadError = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   void _recomputeTotals() {
