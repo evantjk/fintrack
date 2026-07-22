@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/check_in_provider.dart';
 import 'routes/app_router.dart';
 import 'screens/auth/auth_gate.dart';
 
@@ -33,6 +34,7 @@ class FinTrackApp extends StatelessWidget {
         // (see AuthGate -> setUser), so we don't load anything up front.
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => CheckInProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
       child: Consumer<ThemeProvider>(

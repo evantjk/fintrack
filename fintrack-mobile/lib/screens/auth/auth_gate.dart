@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import '../../providers/auth_provider.dart';
+import '../../providers/check_in_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../home_screen.dart';
 import 'login_screen.dart';
@@ -38,6 +39,7 @@ class AuthGate extends StatelessWidget {
         final uid = ready ? user.uid : null;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           context.read<TransactionProvider>().setUser(uid);
+          context.read<CheckInProvider>().setUser(uid);
         });
 
         if (ready) {
