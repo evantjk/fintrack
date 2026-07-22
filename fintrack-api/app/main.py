@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.firebase_client import get_firestore_client
-from app.routers import categories, transactions
+from app.routers import categories, insights, transactions
 
 app = FastAPI(title="FinTrack API")
 
@@ -22,6 +22,7 @@ app.add_middleware(
 
 app.include_router(categories.router)
 app.include_router(transactions.router)
+app.include_router(insights.router)
 
 
 @app.get("/health")

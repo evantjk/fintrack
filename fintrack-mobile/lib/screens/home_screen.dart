@@ -22,8 +22,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  // AiInsightsScreen calls fintrack-api (and, in turn, the Gemini API) as
+  // soon as it is built, so it must not be built by IndexedStack until the
+  // user actually opens that tab - otherwise every app launch would trigger
+  // an AI call whether or not the user ever visits Insights.
+  bool _insightsOpened = false;
 
-  void _goToTab(int index) => setState(() => _currentIndex = index);
+  void _goToTab(int index) => setState(() {
+        _currentIndex = index;
+        if (index == 4) _insightsOpened = true;
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const TransactionsScreen(),
       const StatisticsScreen(),
       const CategoriesScreen(),
-      const AiInsightsScreen(),
+      _insightsOpened ? const AiInsightsScreen() : const SizedBox.shrink(),
     ];
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: pages),
@@ -50,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: NavigationBar(
           selectedIndex: _currentIndex,
-          onDestinationSelected: (i) => setState(() => _currentIndex = i),
+          onDestinationSelected: (i) => _goToTab(i),
           destinations: const [
             NavigationDestination(
                 icon: Icon(Icons.home_outlined),

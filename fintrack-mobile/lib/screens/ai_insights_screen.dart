@@ -2,17 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/transaction_provider.dart';
+import '../services/insights_api.dart';
 import '../services/insights_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/mascots.dart';
 
-/// A simple, on-device "AI analysis" of the user's spending — a handful of
-/// rule-based observations (savings rate, top category, month-over-month
-/// change, etc.) computed from their own transactions. No chat, no external
-/// API calls, nothing billed — everything here is plain Dart aggregation,
-/// same spirit as [TransactionProvider.getExpenseByCategory].
-class AiInsightsScreen extends StatelessWidget {
+/// "AI analysis" of the user's spending, fetched from fintrack-api's
+/// `/insights` endpoint. All aggregation (health score, trend, rule
+/// evaluation) and, when a Gemini key is configured server-side, the
+/// language generation happens on the backend - this screen only renders
+/// whatever [InsightsData] comes back.
+class AiInsightsScreen extends StatefulWidget {
   const AiInsightsScreen({super.key});
+
+  @override
+  State<AiInsightsScreen> createState() => _AiInsightsScreenState();
+}
+
+class _AiInsightsScreenState extends State<AiInsightsScreen> {
+  final _api = InsightsApi();
+  late Future<InsightsData> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _api.fetch();
+  }
+
+  Future<void> _refresh(TransactionProvider provider) async {
+    await provider.loadAll();
+    final next = _api.fetch();
+    setState(() => _future = next);
+    await next;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,61 +46,90 @@ class AiInsightsScreen extends StatelessWidget {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          final all = provider.allTransactions;
-          final insights = InsightsService.generate(
-            transactions: all,
-            categories: provider.categories,
-          );
+          if (provider.allTransactions.isEmpty) {
+            return _EmptyState(p: p);
+          }
 
           return RefreshIndicator(
-            onRefresh: () => provider.loadAll(),
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (all.isEmpty)
-                    _EmptyState(p: p)
-                  else ...[
-                    _HealthScoreCard(
-                      score: InsightsService.computeHealthScore(
-                          transactions: all),
-                      income: provider.totalIncome,
-                      expense: provider.totalExpense,
-                    ),
-                    const SizedBox(height: 16),
-                    _SpendingTrendCard(
-                      series: InsightsService.dailyExpenseSeries(
-                          transactions: all),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Icon(Icons.auto_awesome, color: p.accent, size: 14),
-                        const SizedBox(width: 6),
-                        Text(
-                          'INSIGHTS · ${insights.length}',
-                          style: TextStyle(
-                              color: p.textDark,
-                              fontSize: 10,
-                              letterSpacing: 0.5),
-                        ),
+            onRefresh: () => _refresh(provider),
+            child: FutureBuilder<InsightsData>(
+              future: _future,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 160),
+                      Center(child: CircularProgressIndicator()),
+                    ],
+                  );
+                }
+                if (snapshot.hasError) {
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(32),
+                    children: [
+                      Icon(Icons.error_outline_rounded,
+                          size: 48, color: p.textMuted),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Could not load insights. Pull down to try again.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: p.textMuted, fontSize: 9, height: 1.6),
+                      ),
+                    ],
+                  );
+                }
+
+                final data = snapshot.data!;
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _HealthScoreCard(
+                        score: data.healthScore,
+                        income: data.totalIncome,
+                        expense: data.totalExpense,
+                      ),
+                      const SizedBox(height: 16),
+                      _SpendingTrendCard(series: data.dailyExpenseSeries),
+                      if (data.aiSummary != null) ...[
+                        const SizedBox(height: 16),
+                        _AiSummaryCard(summary: data.aiSummary!),
                       ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Based on your ${all.length} recorded transaction'
-                      '${all.length == 1 ? '' : 's'}, calculated on your '
-                      'device.',
-                      style:
-                          TextStyle(color: p.textMuted, fontSize: 8, height: 1.5),
-                    ),
-                    const SizedBox(height: 12),
-                    ...insights.map((i) => _InsightCard(insight: i)),
-                  ],
-                ],
-              ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Icon(Icons.auto_awesome, color: p.accent, size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            'INSIGHTS · ${data.insights.length}',
+                            style: TextStyle(
+                                color: p.textDark,
+                                fontSize: 10,
+                                letterSpacing: 0.5),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        data.aiGenerated
+                            ? 'Generated by Gemini from your ${provider.allTransactions.length} recorded transaction'
+                                '${provider.allTransactions.length == 1 ? '' : 's'}.'
+                            : 'Based on your ${provider.allTransactions.length} recorded transaction'
+                                '${provider.allTransactions.length == 1 ? '' : 's'}.',
+                        style: TextStyle(
+                            color: p.textMuted, fontSize: 8, height: 1.5),
+                      ),
+                      const SizedBox(height: 12),
+                      ...data.insights.map((i) => _InsightCard(insight: i)),
+                    ],
+                  ),
+                );
+              },
             ),
           );
         },
@@ -420,6 +471,40 @@ class _TrendPainter extends CustomPainter {
       old.series != series ||
       old.barColor != barColor ||
       old.trackColor != trackColor;
+}
+
+/// Freeform overall commentary, shown only when the backend actually called
+/// Gemini (absent when running on the rule-based fallback).
+class _AiSummaryCard extends StatelessWidget {
+  final String summary;
+  const _AiSummaryCard({required this.summary});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = PixelColors.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.auto_awesome, color: p.accent, size: 14),
+                const SizedBox(width: 6),
+                Text('GEMINI SUMMARY',
+                    style: TextStyle(
+                        fontSize: 10, color: p.textDark, letterSpacing: 0.5)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(summary,
+                style: TextStyle(fontSize: 9, color: p.textMuted, height: 1.6)),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _InsightCard extends StatelessWidget {
