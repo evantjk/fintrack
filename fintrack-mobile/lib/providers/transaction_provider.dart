@@ -32,6 +32,12 @@ class TransactionProvider extends ChangeNotifier {
     return _transactions.where((t) => t.type == _filterType).toList();
   }
 
+  /// All loaded transactions, ignoring [filterType]. Screens that compute
+  /// whole-history aggregates (e.g. AI insights) should use this rather than
+  /// [transactions], which is scoped to whatever filter is active on the
+  /// transactions list screen.
+  List<Transaction> get allTransactions => _transactions;
+
   List<Category> get categories => _categories;
   List<Category> get incomeCategories =>
       _categories.where((c) => c.type == 'income').toList();

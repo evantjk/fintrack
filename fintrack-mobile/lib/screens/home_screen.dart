@@ -12,6 +12,7 @@ import '../routes/app_routes.dart';
 import 'transactions_screen.dart';
 import 'statistics_screen.dart';
 import 'categories_screen.dart';
+import 'ai_insights_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,8 +23,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  // AiInsightsScreen calls fintrack-api (and, in turn, the Gemini API) as
+  // soon as it is built, so it must not be built by IndexedStack until the
+  // user actually opens that tab - otherwise every app launch would trigger
+  // an AI call whether or not the user ever visits Insights.
+  bool _insightsOpened = false;
 
-  void _goToTab(int index) => setState(() => _currentIndex = index);
+  void _goToTab(int index) => setState(() {
+    _currentIndex = index;
+    if (index == 4) _insightsOpened = true;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const TransactionsScreen(),
       const StatisticsScreen(),
       const CategoriesScreen(),
+      _insightsOpened ? const AiInsightsScreen() : const SizedBox.shrink(),
     ];
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: pages),
@@ -49,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: NavigationBar(
           selectedIndex: _currentIndex,
-          onDestinationSelected: (i) => setState(() => _currentIndex = i),
+          onDestinationSelected: (i) => _goToTab(i),
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined),
@@ -70,6 +80,11 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.category_outlined),
               selectedIcon: Icon(Icons.category),
               label: 'Categories',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.auto_awesome_outlined),
+              selectedIcon: Icon(Icons.auto_awesome),
+              label: 'Insights',
             ),
           ],
         ),

@@ -23,6 +23,7 @@ app.add_middleware(
 app.include_router(categories.router)
 app.include_router(rewards.router)
 app.include_router(transactions.router)
+app.include_router(insights.router)
 
 
 @app.get("/health")
