@@ -2,8 +2,9 @@ import '../models/category.dart';
 import '../models/transaction.dart';
 
 /// Storage contract for a single user's finance data (categories +
-/// transactions). Implemented by [FirestoreRepository] in the app and by an
-/// in-memory fake in tests, so the provider can be exercised without Firebase.
+/// transactions). Implemented by [HttpRepository] (fintrack-api) in the app
+/// and by an in-memory fake in tests, so the provider can be exercised
+/// without a live backend.
 ///
 /// Every implementation is scoped to one user: the data it returns belongs only
 /// to that account, which is what keeps each signed-in user's data separate.

@@ -2,14 +2,18 @@ rules_version = '2';
 
 // FinTrack security rules.
 //
-// Each user's data lives under users/{uid}/... . A signed-in user may only read
-// and write documents under their own uid, so no account can ever see or modify
-// another user's transactions or categories. Unauthenticated requests are
-// denied everywhere.
+// As of the fintrack-api pivot (see ../proceeding_plan.md Stage 3),
+// fintrack-api is the only writer: it talks to Firestore via the Firebase
+// Admin SDK, which always bypasses these rules by design - so denying the
+// client SDK entirely does not break the backend. The Flutter app no longer
+// talks to Firestore directly (see HttpRepository), so there is nothing left
+// that legitimately needs client-side access. Denying everything here closes
+// the gap that existed while the API and the old client-write rules were
+// both live at once.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

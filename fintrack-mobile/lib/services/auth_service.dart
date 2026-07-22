@@ -31,6 +31,11 @@ class AuthService {
 
   User? get currentUser => _auth.currentUser;
 
+  /// The current user's Firebase ID token, sent as a Bearer token to
+  /// fintrack-api so it can verify the request and derive the uid
+  /// server-side. Null when signed out.
+  Future<String?> getIdToken() async => _auth.currentUser?.getIdToken();
+
   Future<User> signIn({required String email, required String password}) async {
     try {
       final cred = await _auth.signInWithEmailAndPassword(

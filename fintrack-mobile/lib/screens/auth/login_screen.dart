@@ -4,8 +4,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/auth_scaffold.dart';
-import 'signup_screen.dart';
-import 'forgot_password_screen.dart';
+import '../../routes/app_routes.dart';
 
 /// Email / password sign-in. The auth gate swaps to the home screen
 /// automatically once Firebase reports a signed-in user.
@@ -68,10 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
           TextButton(
             onPressed: busy
                 ? null
-                : () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SignUpScreen()),
-                    ),
+                : () => Navigator.pushNamed(context, AppRoutes.signup),
             child: const Text('Sign up'),
           ),
         ],
@@ -113,11 +109,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: TextButton(
                   onPressed: busy
                       ? null
-                      : () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const ForgotPasswordScreen()),
-                          ),
+                      : () => Navigator.pushNamed(
+                          context, AppRoutes.forgotPassword),
                   child: const Text('Forgot password?'),
                 ),
               ),
