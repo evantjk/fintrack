@@ -45,14 +45,17 @@ class TransactionTile extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: ListTile(
           onTap: onTap,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 8,
+          ),
           leading: Container(
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: Color(category?.colorValue ?? 0xFF9E9E9E)
-                  .withValues(alpha: 0.18),
+              color: Color(
+                category?.colorValue ?? 0xFF9E9E9E,
+              ).withValues(alpha: 0.18),
               borderRadius: p.radius == 0 ? null : BorderRadius.circular(14),
               border: p.box(Color(category?.colorValue ?? 0xFF9E9E9E), 2),
             ),
@@ -68,10 +71,11 @@ class TransactionTile extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-                fontSize: pix ? 11 : 15,
-                height: 1.4,
-                fontWeight: pix ? null : FontWeight.w600,
-                color: p.textDark),
+              fontSize: pix ? 11 : 15,
+              height: 1.4,
+              fontWeight: pix ? null : FontWeight.w600,
+              color: p.textDark,
+            ),
           ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
@@ -79,22 +83,37 @@ class TransactionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (category != null)
-                  Text(category!.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: pix ? 8 : 12, color: p.textMuted)),
+                  Text(
+                    category!.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: pix ? 8 : 12,
+                      color: p.textMuted,
+                    ),
+                  ),
                 const SizedBox(height: 2),
-                Text(dateFmt.format(transaction.date),
-                    style: TextStyle(fontSize: pix ? 8 : 12, color: p.textMuted)),
+                Text(
+                  dateFmt.format(transaction.date),
+                  style: TextStyle(fontSize: pix ? 8 : 12, color: p.textMuted),
+                ),
               ],
             ),
           ),
-          trailing: Text(
-            '${isIncome ? '+' : '-'}${fmt.format(transaction.amount)}',
-            style: TextStyle(
-              color: isIncome ? p.income : p.expense,
-              fontWeight: pix ? null : FontWeight.bold,
-              fontSize: pix ? 9 : 15,
+          trailing: SizedBox(
+            width: 105,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                '${isIncome ? '+' : '-'}${fmt.format(transaction.amount)}',
+                maxLines: 1,
+                style: TextStyle(
+                  color: isIncome ? p.income : p.expense,
+                  fontWeight: pix ? null : FontWeight.bold,
+                  fontSize: pix ? 9 : 15,
+                ),
+              ),
             ),
           ),
         ),
