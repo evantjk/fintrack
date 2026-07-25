@@ -144,6 +144,7 @@ class _ThemeSwitcherSheet extends StatelessWidget {
 
     if (rewards.ownsTheme(theme.type)) {
       await rewards.unlockTheme(theme);
+      if (!context.mounted) return;
       themeProvider.setTheme(theme.type);
       Navigator.pop(context);
       ScaffoldMessenger.of(
@@ -226,6 +227,7 @@ class _ThemeSwitcherSheet extends StatelessWidget {
 
     if (confirmed != true || !context.mounted) return;
     if (await rewards.unlockTheme(theme)) {
+      if (!context.mounted) return;
       themeProvider.setTheme(theme.type);
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
