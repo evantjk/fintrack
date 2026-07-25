@@ -63,16 +63,16 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
       builder: (context, provider, _) {
         // Initialize selected category after categories load
         if (_selectedCategory == null && _isEditing) {
-          _selectedCategory =
-              provider.getCategoryById(widget.transaction!.categoryId);
+          _selectedCategory = provider.getCategoryById(
+            widget.transaction!.categoryId,
+          );
         }
         final cats = _type == 'income'
             ? provider.incomeCategories
             : provider.expenseCategories;
 
         // Reset category if it doesn't match current type
-        if (_selectedCategory != null &&
-            _selectedCategory!.type != _type) {
+        if (_selectedCategory != null && _selectedCategory!.type != _type) {
           _selectedCategory = null;
         }
 
@@ -117,8 +117,9 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                       hintText: 'e.g. Monthly Salary',
                       prefixIcon: Icon(Icons.title_outlined),
                     ),
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Title is required' : null,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Title is required'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   _label('Category'),
@@ -135,8 +136,10 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                             value: c,
                             child: Row(
                               children: [
-                                Text(c.icon,
-                                    style: const TextStyle(fontSize: 18)),
+                                Text(
+                                  c.icon,
+                                  style: const TextStyle(fontSize: 18),
+                                ),
                                 const SizedBox(width: 8),
                                 Text(c.name),
                               ],
@@ -186,7 +189,9 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : Text(_isEditing ? 'UPDATE' : 'SAVE'),
                     ),
@@ -202,11 +207,12 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
   }
 
   Widget _label(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text,
-            style: TextStyle(
-                fontSize: 9, color: PixelColors.of(context).textDark)),
-      );
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(
+      text,
+      style: TextStyle(fontSize: 9, color: PixelColors.of(context).textDark),
+    ),
+  );
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -243,23 +249,26 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Delete Transaction'),
-        content:
-            const Text('Are you sure you want to delete this transaction?'),
+        content: const Text(
+          'Are you sure you want to delete this transaction?',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Delete',
-                style: TextStyle(color: PixelColors.of(context).expense)),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: PixelColors.of(context).expense),
+            ),
           ),
         ],
       ),
     );
     if (confirmed == true && mounted) {
-      final provider =
-          Provider.of<TransactionProvider>(context, listen: false);
+      final provider = Provider.of<TransactionProvider>(context, listen: false);
       await provider.deleteTransaction(widget.transaction!.id!);
       if (mounted) Navigator.pop(context);
     }
@@ -345,59 +354,63 @@ class _AmountField extends StatelessWidget {
     final p = PixelColors.of(context);
     return Column(
       children: [
-        Text('AMOUNT',
-            style: TextStyle(
-                fontSize: 8, letterSpacing: 1.5, color: p.textMuted)),
+        Text(
+          'AMOUNT',
+          style: TextStyle(fontSize: 8, letterSpacing: 1.5, color: p.textMuted),
+        ),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text('RM',
-                  style: TextStyle(
-                      fontSize: pixel ? 14 : 20,
-                      color: color,
-                      fontWeight: pixel ? null : FontWeight.w600)),
-            ),
-            ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 90, maxWidth: 240),
-              child: IntrinsicWidth(
-                child: TextFormField(
-                  controller: controller,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: pixel ? 22 : 34,
-                      color: color,
-                      fontWeight: pixel ? null : FontWeight.w700),
-                  decoration: const InputDecoration(
-                    hintText: '0.00',
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    filled: false,
-                    isCollapsed: true,
-                  ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return 'Amount is required';
-                    }
-                    final parsed = double.tryParse(v);
-                    if (parsed == null || parsed <= 0) {
-                      return 'Enter a valid positive amount';
-                    }
-                    return null;
-                  },
+              child: Text(
+                'RM',
+                style: TextStyle(
+                  fontSize: pixel ? 14 : 20,
+                  color: color,
+                  fontWeight: pixel ? null : FontWeight.w600,
                 ),
+              ),
+            ),
+            SizedBox(
+              width: 240,
+              child: TextFormField(
+                controller: controller,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: pixel ? 22 : 34,
+                  color: color,
+                  fontWeight: pixel ? null : FontWeight.w700,
+                ),
+                decoration: const InputDecoration(
+                  hintText: '0.00',
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  filled: false,
+                  isCollapsed: true,
+                  errorMaxLines: 2,
+                ),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return 'Amount is required';
+                  }
+                  final parsed = double.tryParse(v);
+                  if (parsed == null || parsed <= 0) {
+                    return 'Enter a valid positive amount';
+                  }
+                  return null;
+                },
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        Divider(
-            color: color.withValues(alpha: 0.4), thickness: pixel ? 2 : 1),
+        Divider(color: color.withValues(alpha: 0.4), thickness: pixel ? 2 : 1),
       ],
     );
   }
