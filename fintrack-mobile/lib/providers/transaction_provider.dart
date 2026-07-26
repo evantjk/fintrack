@@ -99,47 +99,26 @@ class TransactionProvider extends ChangeNotifier {
     if (repo == null) return;
     final id = await repo.addTransaction(tx);
     _transactions.insert(0, tx.copyWith(id: id));
-    if (tx.type == 'income') {
-      _totalIncome += tx.amount;
-    } else {
-      _totalExpense += tx.amount;
-    }
+    _recomputeTotals();
     notifyListeners();
   }
 
   Future<void> updateTransaction(Transaction tx) async {
     final repo = _repo;
     if (repo == null) return;
-    final old = _transactions.firstWhere((t) => t.id == tx.id);
-    // Reverse old effect
-    if (old.type == 'income') {
-      _totalIncome -= old.amount;
-    } else {
-      _totalExpense -= old.amount;
-    }
     await repo.updateTransaction(tx);
     final idx = _transactions.indexWhere((t) => t.id == tx.id);
     _transactions[idx] = tx;
-    // Apply new effect
-    if (tx.type == 'income') {
-      _totalIncome += tx.amount;
-    } else {
-      _totalExpense += tx.amount;
-    }
+    _recomputeTotals();
     notifyListeners();
   }
 
   Future<void> deleteTransaction(String id) async {
     final repo = _repo;
     if (repo == null) return;
-    final tx = _transactions.firstWhere((t) => t.id == id);
     await repo.deleteTransaction(id);
     _transactions.removeWhere((t) => t.id == id);
-    if (tx.type == 'income') {
-      _totalIncome -= tx.amount;
-    } else {
-      _totalExpense -= tx.amount;
-    }
+    _recomputeTotals();
     notifyListeners();
   }
 
@@ -171,7 +150,7 @@ class TransactionProvider extends ChangeNotifier {
   /// Aggregates expense totals per category, in the shape the statistics screen
   /// expects (`name`, `icon`, `color_value`, `total`), sorted high to low.
   /// Computed in Dart since Firestore has no SQL-style JOIN/GROUP BY.
-  Future<List<Map<String, dynamic>>> getExpenseByCategory() async {
+  List<Map<String, dynamic>> getExpenseByCategory() {
     final totals = <String, double>{};
     for (final t in _transactions.where((t) => t.type == 'expense')) {
       totals[t.categoryId] = (totals[t.categoryId] ?? 0) + t.amount;
