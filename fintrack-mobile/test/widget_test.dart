@@ -21,8 +21,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(
-            create: (_) =>
-                TransactionProvider(InMemoryRepository())..loadAll(),
+            create: (_) => TransactionProvider(InMemoryRepository())..loadAll(),
           ),
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
           ChangeNotifierProvider(create: (_) => AuthProvider()),

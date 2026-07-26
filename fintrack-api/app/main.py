@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.firebase_client import get_firestore_client
-from app.routers import categories, rewards, transactions
+from app.routers import categories, insights, rewards, transactions
 
 app = FastAPI(title="FinTrack API")
 

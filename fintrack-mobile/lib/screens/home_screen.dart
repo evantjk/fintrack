@@ -23,16 +23,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  // AiInsightsScreen calls fintrack-api (and, in turn, the Gemini API) as
+  // AiInsightsScreen calls fintrack-api (and then the Gemini API) as
   // soon as it is built, so it must not be built by IndexedStack until the
   // user actually opens that tab - otherwise every app launch would trigger
   // an AI call whether or not the user ever visits Insights.
   bool _insightsOpened = false;
+  int _insightsVersion = 0;
 
-  void _goToTab(int index) => setState(() {
+  void _goToTab(int index) {
+  setState(() {
+    if (index == 4 && _currentIndex != 4) {
+      _insightsOpened = true;
+      _insightsVersion++;
+    }
     _currentIndex = index;
-    if (index == 4) _insightsOpened = true;
   });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
       const TransactionsScreen(),
       const StatisticsScreen(),
       const CategoriesScreen(),
-      _insightsOpened ? const AiInsightsScreen() : const SizedBox.shrink(),
+      _insightsOpened ? AiInsightsScreen(key: ValueKey(_insightsVersion),)
+      : const SizedBox.shrink(),
     ];
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: pages),
@@ -91,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: _currentIndex == 0 || _currentIndex == 1
           ? FloatingActionButton.extended(
+              heroTag: 'add_transaction_fab',
               onPressed: () => _openAddTransaction(context),
               icon: const Icon(Icons.add),
               label: const Text('ADD'),
