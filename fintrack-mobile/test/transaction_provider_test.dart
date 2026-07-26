@@ -141,7 +141,7 @@ void main() {
     await p.addTransaction(
         makeTx(amount: 20, categoryId: cat.id!, type: 'expense'));
 
-    final byCategory = await p.getExpenseByCategory();
+    final byCategory = p.getExpenseByCategory();
     final row = byCategory.firstWhere((e) => e['name'] == cat.name);
 
     expect((row['total'] as num).toDouble(), 50);
