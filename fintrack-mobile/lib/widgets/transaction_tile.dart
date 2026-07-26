@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/transaction.dart';
 import '../models/category.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 
 class TransactionTile extends StatelessWidget {
   final Transaction transaction;
@@ -23,7 +24,6 @@ class TransactionTile extends StatelessWidget {
     final p = PixelColors.of(context);
     final pix = p.hardShadow;
     final isIncome = transaction.type == 'income';
-    final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
     final dateFmt = DateFormat('dd MMM yyyy');
 
     return Dismissible(
@@ -106,7 +106,7 @@ class TransactionTile extends StatelessWidget {
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerRight,
               child: Text(
-                '${isIncome ? '+' : '-'}${fmt.format(transaction.amount)}',
+                '${isIncome ? '+' : '-'}${formatCurrency(transaction.amount)}',
                 maxLines: 1,
                 style: TextStyle(
                   color: isIncome ? p.income : p.expense,
