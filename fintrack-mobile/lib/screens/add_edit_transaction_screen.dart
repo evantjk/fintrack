@@ -6,6 +6,7 @@ import '../models/category.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
 
+// The form used to add a new transaction or edit an existing one.
 class AddEditTransactionScreen extends StatefulWidget {
   final Transaction? transaction;
   final String? initialType;
@@ -35,6 +36,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
   bool get _isEditing => widget.transaction != null;
 
   @override
+  // Pre-fills the form with existing values when editing.
   void initState() {
     super.initState();
     if (_isEditing) {
@@ -58,6 +60,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
   }
 
   @override
+  // Builds the form: type toggle, amount, title, category, date, and note.
   Widget build(BuildContext context) {
     return Consumer<TransactionProvider>(
       builder: (context, provider, _) {
@@ -206,6 +209,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
     );
   }
 
+  // Small heading shown above a field.
   Widget _label(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
     child: Text(
@@ -214,6 +218,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
     ),
   );
 
+  // Opens the date picker and stores the chosen date.
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -224,6 +229,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
     if (picked != null) setState(() => _date = picked);
   }
 
+  // Validates the form, then saves the new or edited transaction and closes.
   Future<void> _save(TransactionProvider provider) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
@@ -244,6 +250,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
     if (mounted) Navigator.pop(context);
   }
 
+  // Asks the user to confirm, then deletes the transaction.
   Future<void> _confirmDelete() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -275,6 +282,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
   }
 }
 
+// The income / expense switch at the top of the form.
 class _TypeToggle extends StatelessWidget {
   final String selected;
   final ValueChanged<String> onChanged;
@@ -301,6 +309,7 @@ class _TypeToggle extends StatelessWidget {
   }
 }
 
+// One side (income or expense) of the type switch.
 class _Tab extends StatelessWidget {
   final String label;
   final String value;
@@ -338,6 +347,7 @@ class _Tab extends StatelessWidget {
 
 /// Large focal amount input, tinted to the selected type's colour. Replaces the
 /// small inline amount field so the most important value is the visual anchor.
+// The money input field with the RM prefix.
 class _AmountField extends StatelessWidget {
   final TextEditingController controller;
   final Color color;

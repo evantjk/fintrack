@@ -15,6 +15,7 @@ import 'app_routes.dart';
 class AppRouter {
   AppRouter._();
 
+  // Picks the screen to show based on the route name.
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.login:

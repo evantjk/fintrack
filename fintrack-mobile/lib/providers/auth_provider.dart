@@ -24,6 +24,7 @@ class AuthProvider extends ChangeNotifier {
 
   User? get currentUser => _service.currentUser;
 
+  // Runs an auth action while showing the busy spinner, then clears it.
   Future<void> _run(Future<void> Function() action) async {
     _isBusy = true;
     notifyListeners();
@@ -36,9 +37,11 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Each method rethrows [AuthException] so the screen can show the message.
+  // Log in with email and password.
   Future<void> signIn(String email, String password) =>
       _run(() => _service.signIn(email: email, password: password));
 
+  // Create a new account with email and password.
   Future<void> signUp(String email, String password) async {
     _registering = true;
     notifyListeners();
@@ -51,14 +54,17 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Returns `false` if the user dismissed the Google sheet.
+  // Log in using a Google account.
   Future<bool> signInWithGoogle() async {
     var dismissed = false;
     await _run(() async => dismissed = !await _service.signInWithGoogle());
     return !dismissed;
   }
 
+  // Send a password-reset email.
   Future<void> sendPasswordReset(String email) =>
       _run(() => _service.sendPasswordReset(email));
 
+  // Log out.
   Future<void> signOut() => _service.signOut();
 }

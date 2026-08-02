@@ -4,6 +4,7 @@ import '../models/category.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
 
+// The page that shows all categories and lets the user manage them.
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
@@ -58,6 +59,7 @@ class CategoriesScreen extends StatelessWidget {
     );
   }
 
+  // Opens the popup form to add a new category or edit an existing one.
   void _showCategoryDialog(BuildContext context, Category? category) {
     showDialog(
       context: context,
@@ -66,6 +68,7 @@ class CategoriesScreen extends StatelessWidget {
   }
 }
 
+// The scrollable list of the user's categories.
 class _CategoryList extends StatelessWidget {
   final List<Category> categories;
   final String type;
@@ -108,6 +111,7 @@ class _CategoryList extends StatelessWidget {
     );
   }
 
+  // Asks the user to confirm, then deletes the category.
   void _confirmDelete(BuildContext context, Category cat) async {
     final p = PixelColors.of(context);
     final confirmed = await showDialog<bool>(
@@ -139,6 +143,7 @@ class _CategoryList extends StatelessWidget {
   }
 }
 
+// One row showing a category's icon, name and type.
 class _CategoryTile extends StatelessWidget {
   final Category category;
   final VoidCallback onEdit;
@@ -200,6 +205,7 @@ class _CategoryTile extends StatelessWidget {
   }
 }
 
+// The popup form used to add or edit a category.
 class _CategoryDialog extends StatefulWidget {
   final Category? category;
   const _CategoryDialog({this.category});
@@ -253,6 +259,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   ];
 
   @override
+  // Pre-fills the dialog with the category's values when editing.
   void initState() {
     super.initState();
     if (widget.category != null) {
@@ -406,6 +413,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
     );
   }
 
+  // Validates and saves the category (new or edited), then closes the dialog.
   void _save() {
     if (_nameCtrl.text.trim().isEmpty) return;
     final provider = Provider.of<TransactionProvider>(context, listen: false);

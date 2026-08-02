@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+// Shows a number as Malaysian Ringgit (e.g. RM 1,250.00).
+// Uses short form for very big numbers so the text still fits.
 String formatCurrency(double amount) {
   if (!amount.isFinite) return 'RM --';
   if (amount.abs() >= 1e15) {

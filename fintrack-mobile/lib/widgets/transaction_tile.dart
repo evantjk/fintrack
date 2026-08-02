@@ -5,6 +5,7 @@ import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 
+// One row in a transaction list; swipe to delete, tap to edit.
 class TransactionTile extends StatelessWidget {
   final Transaction transaction;
   final Category? category;

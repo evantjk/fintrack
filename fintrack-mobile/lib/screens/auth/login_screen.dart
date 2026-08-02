@@ -8,6 +8,7 @@ import '../../routes/app_routes.dart';
 
 /// Email / password sign-in. The auth gate swaps to the home screen
 /// automatically once Firebase reports a signed-in user.
+// The login page where an existing user signs in.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -28,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // Checks the form, then tries to log in; shows an error if it fails.
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
@@ -41,6 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Logs in with Google and shows an error if it fails.
   Future<void> _google() async {
     final auth = context.read<AuthProvider>();
     final messenger = ScaffoldMessenger.of(context);
@@ -52,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Builds the login form (email, password, log in + Google buttons).
   @override
   Widget build(BuildContext context) {
     final p = PixelColors.of(context);

@@ -16,6 +16,7 @@ Future<void> showThemeSwitcher(BuildContext context) {
   );
 }
 
+// The bottom sheet that lists the themes to pick from.
 class _ThemeSwitcherSheet extends StatelessWidget {
   const _ThemeSwitcherSheet();
 
@@ -237,6 +238,7 @@ class _ThemeSwitcherSheet extends StatelessWidget {
   }
 }
 
+// One theme choice row (with unlock/select state).
 class _ThemeOption extends StatelessWidget {
   final RewardTheme rewardTheme;
   final bool selected;
@@ -335,6 +337,7 @@ class _ThemeOption extends StatelessWidget {
   }
 }
 
+// The small preview icon for a theme.
 class _ThemeIcon extends StatelessWidget {
   final PixelThemeType type;
   final double size;
@@ -368,6 +371,7 @@ class _ThemeIcon extends StatelessWidget {
   }
 }
 
+// Shows the XP cost to unlock a theme.
 class _CostRow extends StatelessWidget {
   final String label;
   final String value;
@@ -428,6 +432,7 @@ class _CostRow extends StatelessWidget {
   }
 }
 
+// The theme icon shown inside the unlock dialog.
 class _ThemeDialogIcon extends StatelessWidget {
   final RewardTheme theme;
 

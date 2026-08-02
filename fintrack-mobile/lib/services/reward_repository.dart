@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import 'api_config.dart';
 import 'auth_service.dart';
 
+// The user's reward info: XP earned, check-in streak, and unlocked themes.
 class RewardState {
   final int totalXp;
   final int spentXp;
@@ -25,6 +26,7 @@ class RewardState {
     required this.activeTheme,
   });
 
+  // Builds the reward info from the backend's JSON.
   factory RewardState.fromJson(Map<String, dynamic> json) {
     return RewardState(
       totalXp: json['total_xp'] as int,
@@ -42,6 +44,7 @@ class RewardState {
   }
 }
 
+// The backend's reply after a daily check-in (XP gained and new totals).
 class CheckInResponse {
   final String status;
   final RewardState profile;
@@ -51,6 +54,7 @@ class CheckInResponse {
     required this.profile,
   });
 
+  // Builds the check-in reply from the backend's JSON.
   factory CheckInResponse.fromJson(Map<String, dynamic> json) {
     return CheckInResponse(
       status: json['status'] as String,
@@ -59,6 +63,7 @@ class CheckInResponse {
   }
 }
 
+// Talks to the backend's reward endpoints (XP, check-ins, theme unlocks).
 class RewardRepository {
   final AuthService _authService;
   final http.Client _client;
@@ -67,8 +72,10 @@ class RewardRepository {
       : _authService = authService ?? AuthService(),
         _client = client ?? http.Client();
 
+  // Builds the full web address for a backend path.
   Uri _uri(String path) => Uri.parse('${ApiConfig.baseUrl}$path');
 
+  // Adds the login token so the backend knows which user is asking.
   Future<Map<String, String>> _headers() async {
     final token = await _authService.getIdToken();
     return {
@@ -77,6 +84,7 @@ class RewardRepository {
     };
   }
 
+  // Reads the reply, or throws if the backend returned an error.
   dynamic _decode(http.Response res) {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return res.body.isEmpty ? null : jsonDecode(res.body);
@@ -84,6 +92,7 @@ class RewardRepository {
     throw Exception('Reward API error ${res.statusCode}: ${res.body}');
   }
 
+  // Gets the user's current XP, streak and unlocked themes.
   Future<RewardState> getRewards() async {
     final res = await _client.get(
       _uri('/rewards'),
@@ -92,6 +101,7 @@ class RewardRepository {
     return RewardState.fromJson(_decode(res) as Map<String, dynamic>);
   }
 
+  // Does today's check-in to earn XP.
   Future<CheckInResponse> checkIn() async {
     final res = await _client.post(
       _uri('/rewards/check-in'),
@@ -100,6 +110,7 @@ class RewardRepository {
     return CheckInResponse.fromJson(_decode(res) as Map<String, dynamic>);
   }
 
+  // Spends XP to unlock a new theme.
   Future<RewardState> unlockTheme(PixelThemeType theme) async {
     final res = await _client.post(
       _uri('/rewards/unlock-theme'),
@@ -109,6 +120,7 @@ class RewardRepository {
     return RewardState.fromJson(_decode(res) as Map<String, dynamic>);
   }
 
+  // Switches to an already-unlocked theme.
   Future<RewardState> applyTheme(PixelThemeType theme) async {
     final res = await _client.post(
       _uri('/rewards/apply-theme'),
@@ -119,6 +131,7 @@ class RewardRepository {
   }
 }
 
+// Converts between a theme and the short text id the backend uses.
 extension PixelThemeTypeId on PixelThemeType {
   String get id {
     switch (this) {
@@ -134,6 +147,7 @@ extension PixelThemeTypeId on PixelThemeType {
   }
 }
 
+// Turns a backend text id back into a theme value.
 PixelThemeType pixelThemeFromId(String id) {
   switch (id) {
     case 'gundam':

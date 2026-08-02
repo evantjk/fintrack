@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import 'mascots.dart';
 
+// The big card showing total balance, income and expenses.
 class BalanceCard extends StatelessWidget {
   final double balance;
   final double income;
@@ -122,6 +123,7 @@ class BalanceCard extends StatelessWidget {
 }
 
 /// Computed "% saved" pill (income vs expense). Replaces Stitch's fake trend.
+// The small pill showing the savings rate.
 class _SavingsPill extends StatelessWidget {
   final double savingsRate;
   final bool positiveFlow;
@@ -167,6 +169,7 @@ class _SavingsPill extends StatelessWidget {
   }
 }
 
+// A small chip showing one number (income or expense).
 class _SummaryChip extends StatelessWidget {
   final String label;
   final double amount;

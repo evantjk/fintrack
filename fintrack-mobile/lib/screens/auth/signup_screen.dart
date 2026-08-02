@@ -7,6 +7,7 @@ import '../../widgets/auth_scaffold.dart';
 import 'login_screen.dart';
 
 /// Create a new account with email + password (with confirmation).
+// The page where a new user creates an account.
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -29,6 +30,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  // Checks the form, creates the account, then returns to the login screen.
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
@@ -49,6 +51,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
+  // Signs up / logs in with Google instead of email and password.
   Future<void> _google() async {
     final auth = context.read<AuthProvider>();
     final messenger = ScaffoldMessenger.of(context);
@@ -60,6 +63,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
+  // Builds the sign-up form (email, password, confirm password).
   @override
   Widget build(BuildContext context) {
     final p = PixelColors.of(context);

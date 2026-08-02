@@ -9,6 +9,7 @@ class ThemeProvider extends ChangeNotifier {
 
   ThemeData get themeData => AppTheme.themeFor(_current);
 
+  // Switch to a chosen theme and refresh the screen.
   void setTheme(PixelThemeType type) {
     if (_current == type) return;
     _current = type;

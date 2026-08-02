@@ -11,6 +11,7 @@ import 'insights_service.dart';
 /// A standalone client rather than a [FinanceRepository] method: insights are
 /// derived, read-only data, not part of the transaction/category storage
 /// contract those repositories implement.
+// Talks to the backend's insights endpoint to get spending insights.
 class InsightsApi {
   final AuthService _authService;
   final http.Client _client;
@@ -19,6 +20,7 @@ class InsightsApi {
       : _authService = authService ?? AuthService(),
         _client = client ?? http.Client();
 
+  // Calls the backend and returns the AI insights for the current user.
   Future<InsightsData> fetch() async {
     final token = await _authService.getIdToken();
     final res = await _client.get(

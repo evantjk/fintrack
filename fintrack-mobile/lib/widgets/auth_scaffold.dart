@@ -119,6 +119,7 @@ class AuthScaffold extends StatelessWidget {
 }
 
 /// A labelled text field styled from the active theme's input decoration.
+// A styled text field used on the auth screens.
 class AuthField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -164,6 +165,7 @@ class AuthField extends StatelessWidget {
 }
 
 /// A horizontal "or" separator used between the email form and Google sign-in.
+// The "OR" line shown between login options.
 class OrDivider extends StatelessWidget {
   const OrDivider({super.key});
 
@@ -191,6 +193,7 @@ class OrDivider extends StatelessWidget {
 /// surface, the official multi-colour "G" mark, and medium-weight label.
 /// Kept white across themes (only the corner radius follows the theme) so it
 /// stays recognisably "Google".
+// The "Sign in with Google" button.
 class GoogleButton extends StatelessWidget {
   final bool busy;
   final VoidCallback? onPressed;
@@ -240,6 +243,7 @@ class GoogleButton extends StatelessWidget {
 /// Given a stronger presence (bold label + a coloured drop shadow that lifts it
 /// off the card) so the main call-to-action clearly stands out instead of
 /// blending into the blue background.
+// The main action button (shows a spinner while busy).
 class AuthButton extends StatelessWidget {
   final String label;
   final bool busy;

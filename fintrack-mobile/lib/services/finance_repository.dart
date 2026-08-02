@@ -13,14 +13,16 @@ abstract class FinanceRepository {
   /// the user already has categories.
   Future<void> ensureSeeded();
 
-  Future<List<Category>> getCategories();
-  Future<List<Transaction>> getTransactions();
+  Future<List<Category>> getCategories();     // read all categories
+  Future<List<Transaction>> getTransactions(); // read all transactions
 
+  // Add / change / remove a category.
   /// Returns the new document id.
   Future<String> addCategory(Category category);
   Future<void> updateCategory(Category category);
   Future<void> deleteCategory(String id);
 
+  // Add / change / remove a transaction.
   /// Returns the new document id.
   Future<String> addTransaction(Transaction tx);
   Future<void> updateTransaction(Transaction tx);

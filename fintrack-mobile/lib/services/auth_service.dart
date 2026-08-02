@@ -36,6 +36,7 @@ class AuthService {
   /// server-side. Null when signed out.
   Future<String?> getIdToken() async => _auth.currentUser?.getIdToken();
 
+  // Logs the user in with their email and password.
   Future<User> signIn({required String email, required String password}) async {
     try {
       final cred = await _auth.signInWithEmailAndPassword(
@@ -87,6 +88,7 @@ class AuthService {
     }
   }
 
+  // Signs the user out.
   Future<void> signOut() => _auth.signOut();
 
   /// Maps FirebaseAuth error codes to messages a user can act on.

@@ -27,6 +27,7 @@ class TransactionProvider extends ChangeNotifier {
   bool _isLoading = false;
   String _filterType = 'all'; // 'all', 'income', 'expense'
 
+  // The transactions to show, narrowed by the current filter.
   List<Transaction> get transactions {
     if (_filterType == 'all') return _transactions;
     return _transactions.where((t) => t.type == _filterType).toList();
@@ -72,6 +73,7 @@ class TransactionProvider extends ChangeNotifier {
     await loadAll();
   }
 
+  // Loads all categories and transactions for the current user.
   Future<void> loadAll() async {
     final repo = _repo;
     if (repo == null) return;
@@ -85,6 +87,7 @@ class TransactionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Adds up income and expenses to update the totals.
   void _recomputeTotals() {
     _totalIncome = _transactions
         .where((t) => t.type == 'income')
@@ -94,6 +97,7 @@ class TransactionProvider extends ChangeNotifier {
         .fold(0.0, (sum, t) => sum + t.amount);
   }
 
+  // Add / change / remove a transaction, then refresh totals and screen.
   Future<void> addTransaction(Transaction tx) async {
     final repo = _repo;
     if (repo == null) return;
@@ -122,6 +126,7 @@ class TransactionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Add / change / remove a category, then reload the lists.
   Future<void> addCategory(Category cat) async {
     final repo = _repo;
     if (repo == null) return;
@@ -170,6 +175,7 @@ class TransactionProvider extends ChangeNotifier {
     return rows;
   }
 
+  // Finds a category by its id, or null if not found.
   Category? getCategoryById(String id) {
     try {
       return _categories.firstWhere((c) => c.id == id);
@@ -178,6 +184,7 @@ class TransactionProvider extends ChangeNotifier {
     }
   }
 
+  // Changes the income/expense/all filter and refreshes the list.
   void setFilter(String type) {
     _filterType = type;
     notifyListeners();

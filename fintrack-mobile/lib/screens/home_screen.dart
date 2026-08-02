@@ -14,6 +14,7 @@ import 'statistics_screen.dart';
 import 'categories_screen.dart';
 import 'ai_insights_screen.dart';
 
+// The main screen with the bottom tab bar (home, transactions, etc.).
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -30,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _insightsOpened = false;
   int _insightsVersion = 0;
 
+  // Switches to the chosen tab (and loads Insights the first time it opens).
   void _goToTab(int index) {
   setState(() {
     if (index == 4 && _currentIndex != 4) {
@@ -107,17 +109,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Opens the add-transaction form.
   void _openAddTransaction(BuildContext context) {
     Navigator.pushNamed(context, AppRoutes.transactionForm);
   }
 }
 
+// The home tab: balance, check-in, quick actions and recent transactions.
 class _DashboardTab extends StatelessWidget {
   /// Called when the user taps "SEE ALL" — jumps to the Transactions tab.
   final VoidCallback onSeeAll;
 
   const _DashboardTab({required this.onSeeAll});
 
+  // Asks the user to confirm, then signs them out.
   Future<void> _confirmLogout(BuildContext context) async {
     final shouldLogout = await showDialog<bool>(
       context: context,
@@ -142,6 +147,7 @@ class _DashboardTab extends StatelessWidget {
     }
   }
 
+  // Does the daily check-in and shows the reward earned.
   Future<void> _handleCheckIn(BuildContext context) async {
     final rewards = context.read<CheckInProvider>();
     final result = await rewards.checkIn();
@@ -163,6 +169,7 @@ class _DashboardTab extends StatelessWidget {
     }
   }
 
+  // Shows the popup celebrating a successful check-in.
   Future<void> _showCheckInSuccess(BuildContext context) {
     final rewards = context.read<CheckInProvider>();
     final p = PixelColors.of(context);
@@ -244,6 +251,7 @@ class _DashboardTab extends StatelessWidget {
     );
   }
 
+  // Shows a simple popup with a title and message.
   Future<void> _showMessageDialog(
     BuildContext context, {
     required IconData icon,
@@ -386,6 +394,7 @@ class _DashboardTab extends StatelessWidget {
   }
 }
 
+// The card that lets the user do their daily check-in.
 class _DailyCheckInCard extends StatelessWidget {
   final VoidCallback onCheckIn;
 
@@ -507,6 +516,7 @@ class _DailyCheckInCard extends StatelessWidget {
   }
 }
 
+// Shows the user's XP and progress toward the next reward.
 class _RewardProgress extends StatelessWidget {
   final CheckInProvider rewards;
 
@@ -537,6 +547,7 @@ class _RewardProgress extends StatelessWidget {
   }
 }
 
+// The row of quick action buttons (add income / add expense).
 class _QuickActions extends StatelessWidget {
   const _QuickActions();
 
@@ -578,6 +589,7 @@ class _QuickActions extends StatelessWidget {
   }
 }
 
+// One quick action button with an icon and label.
 class _ActionButton extends StatelessWidget {
   final String label;
   final IconData icon;

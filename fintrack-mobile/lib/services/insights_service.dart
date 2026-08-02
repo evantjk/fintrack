@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' show IconData, Icons;
 
 enum InsightSentiment { positive, warning, neutral }
 
+// Turns the backend's text tag into a sentiment value (good/watch/neutral).
 InsightSentiment _sentimentFromJson(String value) {
   switch (value) {
     case 'positive':
@@ -44,6 +45,7 @@ class Insight {
     this.sentiment = InsightSentiment.neutral,
   });
 
+  // Builds one insight card from the backend's JSON.
   factory Insight.fromJson(Map<String, dynamic> json) => Insight(
         icon: _iconsByKey[json['icon']] ?? Icons.auto_awesome_outlined,
         title: json['title'] as String,
@@ -62,6 +64,7 @@ class HealthScore {
   const HealthScore(
       {required this.score, required this.label, required this.sentiment});
 
+  // Builds the money health score from the backend's JSON.
   factory HealthScore.fromJson(Map<String, dynamic> json) => HealthScore(
         score: json['score'] as int,
         label: json['label'] as String,
@@ -92,6 +95,7 @@ class InsightsData {
     required this.aiGenerated,
   });
 
+  // Builds the whole insights bundle (score, cards, summary) from JSON.
   factory InsightsData.fromJson(Map<String, dynamic> json) => InsightsData(
         healthScore:
             HealthScore.fromJson(json['health_score'] as Map<String, dynamic>),

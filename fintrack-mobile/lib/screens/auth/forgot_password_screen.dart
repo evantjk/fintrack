@@ -6,6 +6,7 @@ import '../../widgets/auth_scaffold.dart';
 import 'login_screen.dart';
 
 /// Sends a Firebase password-reset email to the entered address.
+// The page where a user asks for a password-reset email.
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -24,6 +25,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
+  // Checks the email, sends the reset link, then shows the "sent" message.
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
@@ -37,6 +39,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
+  // Builds the "reset password" form with a single email field.
   @override
   Widget build(BuildContext context) {
     final busy = context.watch<AuthProvider>().isBusy;

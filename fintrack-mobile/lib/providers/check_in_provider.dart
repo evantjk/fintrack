@@ -3,8 +3,10 @@ import 'package:flutter/foundation.dart';
 import '../services/reward_repository.dart';
 import '../theme/app_theme.dart';
 
+// What happened when the user tapped check-in.
 enum CheckInResult { success, alreadyCheckedIn }
 
+// A theme the user can unlock by spending XP.
 class RewardTheme {
   final PixelThemeType type;
   final String name;
@@ -19,6 +21,7 @@ class RewardTheme {
   });
 }
 
+// Manages daily check-ins, XP, and which themes the user has unlocked.
 class CheckInProvider extends ChangeNotifier {
   static const int baseDailyRewardXp = 10;
   static const int maxDailyRewardXp = 15;
@@ -82,6 +85,7 @@ class CheckInProvider extends ChangeNotifier {
     ),
   ];
 
+  // Loads this user's reward data on login, or resets it on logout.
   Future<void> setUser(String? uid) async {
     if (_uid == uid) return;
     _uid = uid;
@@ -113,10 +117,13 @@ class CheckInProvider extends ChangeNotifier {
     }
   }
 
+  // True if the user has already unlocked this theme.
   bool ownsTheme(PixelThemeType type) => _ownedThemes.contains(type);
 
+  // True if the user has enough XP to unlock this theme.
   bool canAfford(RewardTheme theme) => availableXp >= theme.cost;
 
+  // Does today's check-in and updates XP, or says it was already done.
   Future<CheckInResult> checkIn() async {
     final response = await _repo.checkIn();
     _applyState(response.profile);
@@ -131,6 +138,7 @@ class CheckInProvider extends ChangeNotifier {
     }
   }
 
+  // Spends XP to unlock a theme; returns false if it can't be done.
   Future<bool> unlockTheme(RewardTheme theme) async {
     if (ownsTheme(theme.type)) {
       final state = await _repo.applyTheme(theme.type);
@@ -145,6 +153,7 @@ class CheckInProvider extends ChangeNotifier {
     return true;
   }
 
+  // Copies the backend's reward data into this provider.
   void _applyState(RewardState state) {
     _totalXp = state.totalXp;
     _spentXp = state.spentXp;
@@ -157,9 +166,11 @@ class CheckInProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // True if two dates fall on the same day.
   bool _isSameDate(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
+  // Works out the XP for a check-in (more for a longer streak).
   int _rewardForCheckInNumber(int checkInNumber) {
     if (checkInNumber <= 0) return baseDailyRewardXp;
     final streakBonus = (checkInNumber - 1) ~/ 5;

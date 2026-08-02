@@ -11,6 +11,7 @@ import 'providers/check_in_provider.dart';
 import 'routes/app_router.dart';
 import 'screens/auth/auth_gate.dart';
 
+// App entry point: start Firebase, then run the app.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -23,6 +24,7 @@ Future<void> main() async {
   );
 }
 
+// Root widget: sets up shared providers and the app-wide theme/routes.
 class FinTrackApp extends StatelessWidget {
   const FinTrackApp({super.key});
 

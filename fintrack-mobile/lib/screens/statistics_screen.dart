@@ -4,6 +4,7 @@ import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 
+// The page that shows spending charts and summary numbers.
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
 
@@ -95,6 +96,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 }
 
+// The top row of income, expense and balance cards.
 class _SummaryRow extends StatelessWidget {
   final double income;
   final double expense;
@@ -120,6 +122,7 @@ class _SummaryRow extends StatelessWidget {
   }
 }
 
+// One summary card showing a label and an amount.
 class _StatCard extends StatelessWidget {
   final String label;
   final String value;
@@ -161,6 +164,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+// A bar showing how much was spent in one category.
 class _CategoryBar extends StatelessWidget {
   final String icon;
   final String name;
@@ -244,6 +248,7 @@ class _CategoryBar extends StatelessWidget {
   }
 }
 
+// The card showing how many transactions there are.
 class _TransactionCountCard extends StatelessWidget {
   final int totalCount;
   final int incomeCount;
@@ -279,6 +284,7 @@ class _TransactionCountCard extends StatelessWidget {
   }
 }
 
+// One line in the count card (a label and a number).
 class _CountRow extends StatelessWidget {
   final String label;
   final int count;
@@ -367,12 +373,14 @@ class _SpendingDonut extends StatelessWidget {
   }
 }
 
+// Holds one slice of the donut: its colour and size.
 class _DonutSeg {
   final double value;
   final Color color;
   const _DonutSeg(this.value, this.color);
 }
 
+// Draws the donut chart slices onto the canvas.
 class _DonutPainter extends CustomPainter {
   final List<_DonutSeg> segments;
   final Color trackColor;
@@ -380,6 +388,7 @@ class _DonutPainter extends CustomPainter {
   _DonutPainter({required this.segments, required this.trackColor});
 
   @override
+  // Draws each slice around the ring.
   void paint(Canvas canvas, Size size) {
     const stroke = 24.0;
     final rect = Rect.fromCircle(
@@ -410,6 +419,7 @@ class _DonutPainter extends CustomPainter {
   }
 
   @override
+  // Only redraws when the slices change.
   bool shouldRepaint(covariant _DonutPainter old) =>
       old.segments != segments || old.trackColor != trackColor;
 }

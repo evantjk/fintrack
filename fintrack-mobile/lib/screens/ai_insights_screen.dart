@@ -29,6 +29,7 @@ class _AiInsightsScreenState extends State<AiInsightsScreen> {
     _future = _api.fetch();
   }
 
+  // Reloads transactions and fetches fresh insights.
   Future<void> _refresh(TransactionProvider provider) async {
     await provider.loadAll();
     final next = _api.fetch();
@@ -148,6 +149,7 @@ class _AiInsightsScreenState extends State<AiInsightsScreen> {
   }
 }
 
+// Shown when there is no data yet to build insights from.
 class _EmptyState extends StatelessWidget {
   final PixelColors p;
   const _EmptyState({required this.p});
@@ -176,6 +178,7 @@ class _EmptyState extends StatelessWidget {
 /// Headline card: a blended 0-100 "financial health" reading plus the raw
 /// income/expense numbers it was built from, so the score is never a black
 /// box.
+// The card showing the money "health score".
 class _HealthScoreCard extends StatelessWidget {
   final HealthScore score;
   final double income;
@@ -187,6 +190,7 @@ class _HealthScoreCard extends StatelessWidget {
     required this.expense,
   });
 
+  // Picks a colour based on how good the score is.
   Color _scoreColor(PixelColors p) {
     switch (score.sentiment) {
       case InsightSentiment.positive:
@@ -334,6 +338,7 @@ class _HealthScoreCard extends StatelessWidget {
   }
 }
 
+// A small stat shown inside a card (label + value).
 class _MiniStat extends StatelessWidget {
   final String label;
   final String value;
@@ -403,6 +408,7 @@ class _MiniStat extends StatelessWidget {
 
 /// 14-day daily-expense bar chart, drawn with a CustomPainter (same approach
 /// as the statistics screen's donut) so no chart dependency is needed.
+// The card with the line chart of spending over time.
 class _SpendingTrendCard extends StatelessWidget {
   final List<double> series;
 
@@ -473,6 +479,7 @@ class _SpendingTrendCard extends StatelessWidget {
   }
 }
 
+// Draws the spending trend line chart.
 class _TrendPainter extends CustomPainter {
   final List<double> series;
   final Color barColor;
@@ -485,6 +492,7 @@ class _TrendPainter extends CustomPainter {
   });
 
   @override
+  // Draws the line and points from the data.
   void paint(Canvas canvas, Size size) {
     if (series.isEmpty) return;
     final maxVal = series.fold<double>(0, (m, v) => v > m ? v : m);
@@ -516,6 +524,7 @@ class _TrendPainter extends CustomPainter {
   }
 
   @override
+  // Only redraws when the data changes.
   bool shouldRepaint(covariant _TrendPainter old) =>
       old.series != series ||
       old.barColor != barColor ||
@@ -524,6 +533,7 @@ class _TrendPainter extends CustomPainter {
 
 /// Freeform overall commentary, shown only when the backend actually called
 /// Gemini (absent when running on the rule-based fallback).
+// The card showing the AI (or rule-based) written summary.
 class _AiSummaryCard extends StatelessWidget {
   final String summary;
   const _AiSummaryCard({required this.summary});
@@ -563,11 +573,13 @@ class _AiSummaryCard extends StatelessWidget {
   }
 }
 
+// One insight tip card, coloured by its sentiment.
 class _InsightCard extends StatelessWidget {
   final Insight insight;
 
   const _InsightCard({required this.insight});
 
+  // Picks a colour for the insight (good, warning, or neutral).
   Color _sentimentColor(PixelColors p) {
     switch (insight.sentiment) {
       case InsightSentiment.positive:
@@ -579,6 +591,7 @@ class _InsightCard extends StatelessWidget {
     }
   }
 
+  // Returns the short label for the insight's sentiment.
   String _sentimentLabel() {
     switch (insight.sentiment) {
       case InsightSentiment.positive:

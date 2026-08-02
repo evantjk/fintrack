@@ -31,8 +31,10 @@ class HttpRepository implements FinanceRepository {
       : _authService = authService ?? AuthService(),
         _client = client ?? http.Client();
 
+  // Builds the full web address for a backend path.
   Uri _uri(String path) => Uri.parse('${ApiConfig.baseUrl}$path');
 
+  // Adds the login token so the backend knows which user is asking.
   Future<Map<String, String>> _headers() async {
     final token = await _authService.getIdToken();
     return {
@@ -50,6 +52,7 @@ class HttpRepository implements FinanceRepository {
     throw ApiException(res.statusCode, res.body);
   }
 
+  // Asks the backend to create the starter categories on first use.
   @override
   Future<void> ensureSeeded() async {
     final res =
@@ -57,6 +60,7 @@ class HttpRepository implements FinanceRepository {
     _decode(res);
   }
 
+  // Gets all categories for the signed-in user from the backend.
   @override
   Future<List<Category>> getCategories() async {
     final res = await _client.get(_uri('/categories'), headers: await _headers());
@@ -67,6 +71,7 @@ class HttpRepository implements FinanceRepository {
         .toList();
   }
 
+  // Gets all transactions for the signed-in user from the backend.
   @override
   Future<List<Transaction>> getTransactions() async {
     final res =
@@ -78,6 +83,7 @@ class HttpRepository implements FinanceRepository {
         .toList();
   }
 
+  // Saves a new category and returns its id.
   @override
   Future<String> addCategory(Category category) async {
     final res = await _client.post(
@@ -89,6 +95,7 @@ class HttpRepository implements FinanceRepository {
     return json['id'] as String;
   }
 
+  // Saves changes to an existing category.
   @override
   Future<void> updateCategory(Category category) async {
     final res = await _client.put(
@@ -99,6 +106,7 @@ class HttpRepository implements FinanceRepository {
     _decode(res);
   }
 
+  // Removes a category by its id.
   @override
   Future<void> deleteCategory(String id) async {
     final res =
@@ -106,6 +114,7 @@ class HttpRepository implements FinanceRepository {
     _decode(res);
   }
 
+  // Saves a new transaction and returns its id.
   @override
   Future<String> addTransaction(Transaction tx) async {
     final res = await _client.post(
@@ -117,6 +126,7 @@ class HttpRepository implements FinanceRepository {
     return json['id'] as String;
   }
 
+  // Saves changes to an existing transaction.
   @override
   Future<void> updateTransaction(Transaction tx) async {
     final res = await _client.put(
@@ -127,6 +137,7 @@ class HttpRepository implements FinanceRepository {
     _decode(res);
   }
 
+  // Removes a transaction by its id.
   @override
   Future<void> deleteTransaction(String id) async {
     final res = await _client.delete(_uri('/transactions/$id'),

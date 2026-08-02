@@ -11,8 +11,9 @@ class InMemoryRepository implements FinanceRepository {
   final List<Transaction> _transactions = [];
   int _seq = 0;
 
-  String _nextId() => 'id${++_seq}';
+  String _nextId() => 'id${++_seq}'; // makes a fresh fake id
 
+  // Fills in the starter categories the first time, like the real backend.
   @override
   Future<void> ensureSeeded() async {
     if (_categories.isNotEmpty) return;
@@ -21,6 +22,7 @@ class InMemoryRepository implements FinanceRepository {
     }
   }
 
+  // Reads from the in-memory lists instead of the network.
   @override
   Future<List<Category>> getCategories() async {
     final list = [..._categories]..sort(compareCategories);
@@ -33,6 +35,7 @@ class InMemoryRepository implements FinanceRepository {
     return list;
   }
 
+  // Add / change / remove items directly in the in-memory lists below.
   @override
   Future<String> addCategory(Category category) async {
     final id = _nextId();
