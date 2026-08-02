@@ -10,16 +10,21 @@ Features
   date), with income/expense filters and swipe-to-delete.
 - **Statistics** — a custom-painted **donut chart** plus per-category spending
   bars and a transaction overview.
+- **AI Insights** — a money "health score", a spending-trend line chart, and
+  written tips. Powered by **Google Gemini** when an API key is set, with an
+  automatic **rule-based fallback** so it always works even without a key.
+- **Rewards & daily check-in** — earn XP with a daily check-in and spend it to
+  unlock extra themes.
 - **Categories** — manage income/expense categories with custom icons & colours.
 - **Accounts** — email/password and Google sign-in via Firebase Auth.
 - **Cloud persistence** — categories and transactions are stored in Firestore,
   reached through a dedicated backend (not directly from the client); nothing
   is lost on restart and data follows the user across devices.
-- **5… now 4 switchable themes** — a custom theming engine offering **Original**
+- **4 switchable themes** — a custom theming engine offering **Original**
   (clean Material), **Gundam** and **Hello Kitty** (retro pixel), and
   **Luxury — "Old Money"** (elegant serif). One widget set renders every theme.
 
-📱 Screenshots
+Screenshots
 
 | Dashboard (Original) | Dashboard (Luxury) | Statistics |
 |---|---|---|
@@ -29,7 +34,7 @@ Features
 |---|---|---|
 | ![Transactions](fintrack-mobile/screenshots/transactions.png) | ![Add](fintrack-mobile/screenshots/add_transaction.png) | ![Categories](fintrack-mobile/screenshots/categories.png) |
 
-🛠 Tech Stack
+Tech Stack
 
 | Concern | Choice |
 |---|---|
@@ -38,11 +43,12 @@ Features
 | State management | `provider` (`ChangeNotifier`) |
 | Auth | Firebase Auth (email/password + Google), called directly from the client |
 | Data persistence | Firestore — written only by the backend, via the Firebase Admin SDK |
+| AI insights | Google Gemini (`gemini-2.5-flash`) with a rule-based fallback |
 | Formatting | `intl` (currency & dates) |
 | Theming | Custom `ThemeExtension` (`PixelColors`) + style-knobs |
 | Charts / mascots | Hand-written `CustomPainter` (no chart dependency) |
 
-🏗 Architecture
+Architecture
 
 The repository is a monorepo with two parts, both active:
 
@@ -57,10 +63,10 @@ fintrack/
 
 1. **Auth** — the Flutter app talks to Firebase Auth *directly*. Sign-in,
    sign-up, Google sign-in, and password reset never touch the backend.
-2. **Data** — categories and transactions go through `fintrack-api`, which
-   is the only thing that talks to Firestore. The client has no Firestore
-   dependency at all; `firestore.rules` denies the client SDK entirely, so
-   the API is the sole writer.
+2. **Data** — categories, transactions, insights, and rewards go through
+   `fintrack-api`, which is the only thing that talks to Firestore. The client
+   has no Firestore dependency at all; `firestore.rules` denies the client SDK
+   entirely, so the API is the sole writer.
 
 ```
 fintrack-mobile (Flutter)                 fintrack-api (FastAPI)              Firebase
@@ -72,9 +78,12 @@ TransactionProvider
   → HttpRepository ───── Bearer <ID token> ─────▶ get_current_uid()
                           GET/POST/PUT/DELETE        verifies token, derives uid
                           /categories, /transactions  ↓
-                                                    Admin SDK ──────────────▶ Firestore
+                          /insights, /rewards      Admin SDK ──────────────▶ Firestore
                                                     (bypasses firestore.rules    (data)
                                                      by design)
+                                                       │
+                                                       └── /insights ──▶ Google Gemini
+                                                           (optional; rule-based fallback)
 ```
 
 The Flutter app (`fintrack-mobile/`) follows a layered structure with clear
@@ -92,11 +101,15 @@ fintrack-mobile/lib/
 │   ├── finance_repository.dart          # Storage-agnostic interface (Category/Transaction CRUD)
 │   ├── http_repository.dart             # FinanceRepository impl - calls fintrack-api
 │   ├── in_memory_repository.dart        # FinanceRepository impl - test double
+│   ├── insights_api.dart                # Fetches AI insights from fintrack-api
+│   ├── insights_service.dart            # Parses the insights response into models
+│   ├── reward_repository.dart           # XP, daily check-in, unlockable themes
 │   ├── api_config.dart                  # fintrack-api base URL (local-dev only)
 │   └── default_categories.dart          # Starter categories seeded for new users
 ├── providers/                           # State management (ChangeNotifier)
 │   ├── transaction_provider.dart        # transactions, categories, totals, aggregation
 │   ├── auth_provider.dart               # auth UI state, forwards to AuthService
+│   ├── check_in_provider.dart           # daily check-in, XP, theme unlocking
 │   └── theme_provider.dart              # active theme
 ├── routes/
 │   ├── app_router.dart                  # onGenerateRoute
@@ -105,6 +118,7 @@ fintrack-mobile/lib/
 │   ├── home_screen.dart                 # dashboard + bottom navigation host
 │   ├── transactions_screen.dart
 │   ├── statistics_screen.dart
+│   ├── ai_insights_screen.dart          # health score, trend chart, AI tips
 │   ├── categories_screen.dart
 │   ├── add_edit_transaction_screen.dart
 │   └── auth/                            # auth_gate, login, signup, forgot_password
@@ -114,6 +128,8 @@ fintrack-mobile/lib/
 │   ├── theme_switcher.dart
 │   ├── auth_scaffold.dart
 │   └── mascots.dart                     # CustomPainter theme mascots
+├── utils/
+│   └── currency_formatter.dart          # RM currency formatting helper
 └── theme/
     └── app_theme.dart                   # PixelColors ThemeExtension + all themes
 ```
@@ -125,9 +141,21 @@ fintrack-api/app/
 ├── main.py                 # FastAPI() app, CORS (local-dev), router registration, /health
 ├── firebase_client.py      # Firebase Admin SDK init (service-account credentials)
 ├── auth.py                 # Verifies the Bearer ID token, derives uid for every request
-├── schemas/                # Pydantic request/response models (category.py, transaction.py)
-├── routers/                # HTTP layer only (categories.py, transactions.py)
-└── services/                # Firestore reads/writes + default-category seed data
+├── schemas/                # Pydantic request/response models
+│   ├── category.py
+│   ├── transaction.py
+│   ├── insights.py
+│   └── reward.py
+├── routers/                # HTTP layer only
+│   ├── categories.py
+│   ├── transactions.py
+│   ├── insights.py         # GET /insights
+│   └── rewards.py          # daily check-in + XP endpoints
+└── services/               # Firestore reads/writes + business logic
+    ├── category_service.py
+    ├── transaction_service.py
+    ├── insights_service.py # builds facts, calls Gemini, rule-based fallback
+    └── reward_service.py
 ```
 
 **Data flow:** UI (screens/widgets) → `Provider` (state) → `FinanceRepository`
@@ -135,7 +163,7 @@ fintrack-api/app/
 theme tokens via `PixelColors.of(context)` and rebuild when the provider
 notifies a change.
 
-🎨 Theming engine
+Theming engine
 
 Themes are not just colour swaps. `app_theme.dart` exposes a `PixelColors`
 `ThemeExtension` carrying both **role colours** (`income`, `expense`, `accent`,
@@ -150,56 +178,117 @@ Themes are not just colour swaps. `app_theme.dart` exposes a `PixelColors`
 Any new UI must read these tokens (never hard-code colours/fonts) so all themes
 keep working.
 
-🚀 Getting Started
+Getting Started (Windows)
 
-Prerequisites
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (Dart SDK `^3.12`)
-- Python 3.12+ (for the backend)
-- A Firebase Admin service-account key for the project (one-time manual step
-  — see `fintrack-api/README.md`)
+This assumes you already have the **FinTrack** folder on your PC. Every command
+below is typed into **Command Prompt** (press the Windows key, type `cmd`, Enter).
+The app runs in **Google Chrome**.
 
-### Run both sides at once
+Steps 1–2 are a one-time setup. After that, you only repeat steps 3–4 to launch
+the app.
 
-```bash
-run-dev.bat
+**1. Install the tools you need**
+
+Download and install these (accept the default options):
+
+- **Flutter SDK** — https://docs.flutter.dev/get-started/install/windows
+  (this also installs Dart)
+- **Python 3.12 or newer** — https://www.python.org/downloads/
+  During install, **tick "Add python.exe to PATH"**.
+- **Google Chrome** — https://www.google.com/chrome/ (you probably have it)
+
+Then **close and reopen Command Prompt** (so it sees the new tools) and check
+they're installed:
+
+```
+flutter --version
+python --version
 ```
 
-This opens the API (`uvicorn`, `http://localhost:8000`) and the Flutter app
-(`flutter run -d chrome`) in separate windows. It assumes `fintrack-api/.venv`
-already exists with dependencies installed and `serviceAccountKey.json` is in
-place — see `fintrack-api/README.md` for that one-time setup.
+Both should print a version number. If you see "not recognized", the tool
+wasn't added to PATH — reinstall it and make sure that option is ticked.
 
-### Run manually
+First time only, turn on Flutter's web support:
 
-```bash
-# Backend
+```
+flutter config --enable-web
+```
+
+**2. Add the Firebase key** (one-time — needed for login & saving data)
+
+Without this file the app still opens, but you can't log in or save anything.
+
+1. Firebase Console → project `mobile-development-b86da` → **Project settings**
+   → **Service accounts** → **Generate new private key** (downloads a `.json`).
+2. Rename/move that file to: **`fintrack-api\serviceAccountKey.json`**
+
+**3. Start the backend** (leave this Command Prompt window open)
+
+Go to the project folder first (change the path to where your folder is), then:
+
+```
 cd fintrack-api
-.venv\Scripts\uvicorn.exe app.main:app --reload --port 8000
+copy .env.example .env
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
 
-# Client (separate terminal)
+This window is now the server — **keep it running**. To check it worked, open
+**http://localhost:8000/health** in a browser; it should say the server is up.
+
+> Next time you only need the last two lines: `.venv\Scripts\activate` then
+> `uvicorn app.main:app --reload --port 8000`. The `copy`, `venv`, and
+> `pip install` steps are first-time only.
+
+**4. Start the app in Chrome** (open a SECOND Command Prompt window)
+
+Leave the backend window running and open a new Command Prompt:
+
+```
 cd fintrack-mobile
 flutter pub get
-flutter run -d chrome
+flutter run -d chrome --web-port=5173
 ```
 
-Build a release APK
+Chrome opens automatically with FinTrack running. The first run downloads
+packages and can take a minute. (`flutter pub get` is first-time only.)
+
+**5. Use the app**
+
+Sign up (or use Google sign-in), then add a transaction — it should appear on
+the dashboard and still be there after a refresh.
+
+To **stop** everything: click each Command Prompt window and press `q` (for the
+app) / `Ctrl + C` (for the server), or just close both windows.
+
+> **Shortcut:** instead of doing steps 3 and 4 by hand, you can just
+> **double-click `run-dev.bat`** in the project folder. It runs the same setup
+> and launches both the server and the app for you in one go.
+
+**(Optional) Enable real Gemini AI insights**
+
+Insights work out of the box using a built-in rule-based fallback. To use the
+real Gemini model instead:
+
+1. Get a free key at **https://aistudio.google.com/apikey**.
+2. Open `fintrack-api\.env` in a text editor and set
+   `GEMINI_API_KEY=your-key-here`.
+3. Stop the backend (`Ctrl + C`) and start it again.
+
+Leaving the key blank keeps the rule-based insights — you still get a health
+score, trend chart, and tips.
+
+Quality
+
 ```bash
 cd fintrack-mobile
-flutter build apk --release
+flutter analyze lib   # static analysis of the app (currently: no issues)
+flutter test          # unit / widget tests
 ```
 
-(A release build talks to `fintrack-api` over `http://localhost`/`10.0.2.2`,
-which is local-dev only — pointing a release build at a real device needs a
-deployed API URL, not yet set up.)
-
-✅ Quality
-
-```bash
-flutter analyze   # static analysis (currently: no issues)
-flutter test      # unit / widget tests
-```
-
-📁 Data model
+Data model
 
 | Entity | Key fields |
 |---|---|
@@ -214,6 +303,7 @@ References
 
 - [Flutter](https://flutter.dev) & [Dart](https://dart.dev)
 - [FastAPI](https://fastapi.tiangolo.com) & [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
+- [Google Gemini API](https://ai.google.dev/) (optional AI insights)
 - Client packages: `provider`, `firebase_auth`, `firebase_core`, `http`, `intl`, `uuid`
 - Backend packages: `fastapi`, `uvicorn`, `firebase-admin`, `pydantic`, `python-dotenv`
 - Fonts: [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) and
