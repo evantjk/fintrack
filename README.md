@@ -178,10 +178,10 @@ Themes are not just colour swaps. `app_theme.dart` exposes a `PixelColors`
 Any new UI must read these tokens (never hard-code colours/fonts) so all themes
 keep working.
 
-Getting Started (Windows)
+Getting Started
 
-This assumes you already have the **FinTrack** folder on your PC. Every command
-below is typed into **Command Prompt** (press the Windows key, type `cmd`, Enter).
+Open the project folder in **VS Code**, then use its built-in terminal
+(**Terminal → New Terminal**, or `` Ctrl+` ``) to run the commands below.
 The app runs in **Google Chrome**.
 
 Steps 1–2 are a one-time setup. After that, you only repeat steps 3–4 to launch
@@ -189,26 +189,26 @@ the app.
 
 **1. Install the tools you need**
 
-Download and install these (accept the default options):
+Download and install these (accept the default options), then restart VS Code:
 
-- **Flutter SDK** — https://docs.flutter.dev/get-started/install/windows
-  (this also installs Dart)
+- **Flutter SDK** — https://docs.flutter.dev/get-started/install (installs Dart too)
 - **Python 3.12 or newer** — https://www.python.org/downloads/
-  During install, **tick "Add python.exe to PATH"**.
-- **Google Chrome** — https://www.google.com/chrome/ (you probably have it)
+  (on Windows, tick "Add python.exe to PATH" during install)
+- **Google Chrome**
 
-Then **close and reopen Command Prompt** (so it sees the new tools) and check
-they're installed:
+Recommended: install the **Flutter** and **Python** extensions in VS Code.
+
+In a VS Code terminal, confirm both tools are found:
 
 ```
 flutter --version
 python --version
 ```
 
-Both should print a version number. If you see "not recognized", the tool
-wasn't added to PATH — reinstall it and make sure that option is ticked.
+Both should print a version. If you see "not recognized"/"command not found",
+the tool isn't on your PATH — reinstall it and restart VS Code.
 
-First time only, turn on Flutter's web support:
+First time only, enable Flutter's web support:
 
 ```
 flutter config --enable-web
@@ -216,15 +216,15 @@ flutter config --enable-web
 
 **2. Add the Firebase key** (one-time — needed for login & saving data)
 
-Without this file the app still opens, but you can't log in or save anything.
+The backend needs a Firebase service-account key. Without it the app still
+opens, but you can't log in or save data.
 
-1. Firebase Console → project `mobile-development-b86da` → **Project settings**
-   → **Service accounts** → **Generate new private key** (downloads a `.json`).
-2. Rename/move that file to: **`fintrack-api\serviceAccountKey.json`**
+1. In the Firebase Console, open your project → **Project settings** →
+   **Service accounts** → **Generate new private key** (downloads a `.json`).
+2. Move that file into the `fintrack-api` folder and name it
+   **`serviceAccountKey.json`**.
 
-**3. Start the backend** (leave this Command Prompt window open)
-
-Go to the project folder first (change the path to where your folder is), then:
+**3. Start the backend** (first VS Code terminal — leave it running)
 
 ```
 cd fintrack-api
@@ -235,16 +235,17 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-This window is now the server — **keep it running**. To check it worked, open
-**http://localhost:8000/health** in a browser; it should say the server is up.
+This terminal is now the server — **keep it open**. To check it worked, open
+**http://localhost:8000/health** in a browser; it should report the server is up.
 
-> Next time you only need the last two lines: `.venv\Scripts\activate` then
+> Next time you only need: `.venv\Scripts\activate` then
 > `uvicorn app.main:app --reload --port 8000`. The `copy`, `venv`, and
 > `pip install` steps are first-time only.
 
-**4. Start the app in Chrome** (open a SECOND Command Prompt window)
+**4. Start the app in Chrome** (open a SECOND terminal)
 
-Leave the backend window running and open a new Command Prompt:
+Click the **+** in the VS Code terminal panel to open another terminal (so the
+backend keeps running in the first one), then:
 
 ```
 cd fintrack-mobile
@@ -260,12 +261,11 @@ packages and can take a minute. (`flutter pub get` is first-time only.)
 Sign up (or use Google sign-in), then add a transaction — it should appear on
 the dashboard and still be there after a refresh.
 
-To **stop** everything: click each Command Prompt window and press `q` (for the
-app) / `Ctrl + C` (for the server), or just close both windows.
+To **stop** everything: click into each terminal and press `q` (the app) /
+`Ctrl + C` (the server), or just close the terminals.
 
-> **Shortcut:** instead of doing steps 3 and 4 by hand, you can just
-> **double-click `run-dev.bat`** in the project folder. It runs the same setup
-> and launches both the server and the app for you in one go.
+> **Shortcut (Windows):** instead of steps 3–4, you can double-click
+> `run-dev.bat` in the project folder to set up and launch both at once.
 
 **(Optional) Enable real Gemini AI insights**
 
