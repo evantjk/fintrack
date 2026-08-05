@@ -60,6 +60,7 @@ class PixelColors extends ThemeExtension<PixelColors> {
     required this.emoji,
   });
 
+  // Gets the current theme's colours from the context.
   static PixelColors of(BuildContext context) =>
       Theme.of(context).extension<PixelColors>()!;
 
@@ -88,6 +89,7 @@ class PixelColors extends ThemeExtension<PixelColors> {
   }
 
   @override
+  // Returns a copy with some colours changed.
   PixelColors copyWith({
     Color? income,
     Color? expense,
@@ -127,6 +129,7 @@ class PixelColors extends ThemeExtension<PixelColors> {
   }
 
   @override
+  // Smoothly blends between two themes when switching.
   PixelColors lerp(ThemeExtension<PixelColors>? other, double t) {
     if (other is! PixelColors) return this;
     return PixelColors(
@@ -150,6 +153,7 @@ class PixelColors extends ThemeExtension<PixelColors> {
   }
 }
 
+// Builds the ThemeData for each of the app's themes.
 class AppTheme {
   AppTheme._();
 
@@ -158,6 +162,7 @@ class AppTheme {
   /// Elegant serif used by the non-pixel Luxury ("old money") theme.
   static const String serifFont = 'EBGaramond';
 
+  // Returns the ThemeData for the given theme type.
   static ThemeData themeFor(PixelThemeType type) {
     switch (type) {
       case PixelThemeType.original:
@@ -271,6 +276,7 @@ class AppTheme {
 
   /// Shared theme builder. Reads the style knobs off [colors] so it can emit
   /// both the chunky pixel look and the soft Material look.
+  // Shared builder that assembles a ThemeData from a set of colours.
   static ThemeData _build({
     required Color primary,
     required Color background,
@@ -405,6 +411,7 @@ class AppTheme {
 
   /// Press Start 2P is large and wide, so the text scale is dialed down and
   /// given generous line-height for legibility.
+  // Builds the text styles used by the pixel themes.
   static TextTheme _pixelTextTheme(Color textDark) {
     TextStyle s(double size) => TextStyle(fontSize: size, height: 1.4, color: textDark);
     return TextTheme(

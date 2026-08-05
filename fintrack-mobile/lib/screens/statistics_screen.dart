@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 
+// The page that shows spending charts and summary numbers.
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
 
@@ -12,22 +13,6 @@ class StatisticsScreen extends StatefulWidget {
 }
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
-  List<Map<String, dynamic>> _expenseByCategory = [];
-  bool _loaded = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadStats();
-  }
-
-  Future<void> _loadStats() async {
-    final provider =
-        Provider.of<TransactionProvider>(context, listen: false);
-    final data = await provider.getExpenseByCategory();
-    if (mounted) setState(() { _expenseByCategory = data; _loaded = true; });
-  }
-
   @override
   Widget build(BuildContext context) {
     final p = PixelColors.of(context);
@@ -35,18 +20,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       appBar: AppBar(title: const Text('STATISTICS')),
       body: Consumer<TransactionProvider>(
         builder: (context, provider, _) {
-          if (!_loaded) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
-          final total = _expenseByCategory.fold<double>(
+          final expenseByCategory = provider.getExpenseByCategory();
+          final total = expenseByCategory.fold<double>(
               0, (sum, e) => sum + (e['total'] as num).toDouble());
 
           return RefreshIndicator(
-            onRefresh: () async {
-              setState(() => _loaded = false);
-              await _loadStats();
-            },
+            onRefresh: provider.loadAll,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
@@ -64,7 +43,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     style: TextStyle(fontSize: 11, color: p.textDark),
                   ),
                   const SizedBox(height: 12),
-                  if (_expenseByCategory.isEmpty)
+                  if (expenseByCategory.isEmpty)
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.all(32),
@@ -82,16 +61,16 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     )
                   else ...[
                     _SpendingDonut(
-                        data: _expenseByCategory, total: total),
+                        data: expenseByCategory, total: total),
                     const SizedBox(height: 16),
-                    ..._expenseByCategory.map((e) {
+                    ...expenseByCategory.map((e) {
                       final amount = (e['total'] as num).toDouble();
                       final pct = total > 0 ? amount / total : 0.0;
                       final color = Color(e['color_value'] as int);
                       return _CategoryBar(
                         icon: e['icon'] as String,
                         name: e['name'] as String,
-                        amount: fmt.format(amount),
+                        amount: formatCurrency(amount),
                         percentage: pct,
                         color: color,
                       );
@@ -117,6 +96,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 }
 
+// The top row of income, expense and balance cards.
 class _SummaryRow extends StatelessWidget {
   final double income;
   final double expense;
@@ -128,21 +108,21 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = PixelColors.of(context);
-    final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
     return Row(
       children: [
         Expanded(
-            child: _StatCard('Income', fmt.format(income), p.income,
+            child: _StatCard('Income', formatCurrency(income), p.income,
                 Icons.arrow_downward_rounded)),
         const SizedBox(width: 12),
         Expanded(
-            child: _StatCard('Expense', fmt.format(expense), p.expense,
+            child: _StatCard('Expense', formatCurrency(expense), p.expense,
                 Icons.arrow_upward_rounded)),
       ],
     );
   }
 }
 
+// One summary card showing a label and an amount.
 class _StatCard extends StatelessWidget {
   final String label;
   final String value;
@@ -184,6 +164,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+// A bar showing how much was spent in one category.
 class _CategoryBar extends StatelessWidget {
   final String icon;
   final String name;
@@ -217,8 +198,18 @@ class _CategoryBar extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 9, color: p.textDark))),
-                Text(amount,
-                    style: TextStyle(color: color, fontSize: 9)),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 130),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      amount,
+                      maxLines: 1,
+                      style: TextStyle(color: color, fontSize: 9),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -257,6 +248,7 @@ class _CategoryBar extends StatelessWidget {
   }
 }
 
+// The card showing how many transactions there are.
 class _TransactionCountCard extends StatelessWidget {
   final int totalCount;
   final int incomeCount;
@@ -292,6 +284,7 @@ class _TransactionCountCard extends StatelessWidget {
   }
 }
 
+// One line in the count card (a label and a number).
 class _CountRow extends StatelessWidget {
   final String label;
   final int count;
@@ -335,7 +328,6 @@ class _SpendingDonut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = PixelColors.of(context);
-    final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
     final segments = [
       for (final e in data)
         _DonutSeg((e['total'] as num).toDouble(), Color(e['color_value'] as int))
@@ -359,10 +351,16 @@ class _SpendingDonut extends StatelessWidget {
                             letterSpacing: 1,
                             color: p.textMuted)),
                     const SizedBox(height: 6),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(fmt.format(total),
-                          style: TextStyle(fontSize: 13, color: p.textDark)),
+                    SizedBox(
+                      width: 125,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          formatCurrency(total),
+                          maxLines: 1,
+                          style: TextStyle(fontSize: 13, color: p.textDark),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -375,12 +373,14 @@ class _SpendingDonut extends StatelessWidget {
   }
 }
 
+// Holds one slice of the donut: its colour and size.
 class _DonutSeg {
   final double value;
   final Color color;
   const _DonutSeg(this.value, this.color);
 }
 
+// Draws the donut chart slices onto the canvas.
 class _DonutPainter extends CustomPainter {
   final List<_DonutSeg> segments;
   final Color trackColor;
@@ -388,6 +388,7 @@ class _DonutPainter extends CustomPainter {
   _DonutPainter({required this.segments, required this.trackColor});
 
   @override
+  // Draws each slice around the ring.
   void paint(Canvas canvas, Size size) {
     const stroke = 24.0;
     final rect = Rect.fromCircle(
@@ -418,6 +419,7 @@ class _DonutPainter extends CustomPainter {
   }
 
   @override
+  // Only redraws when the slices change.
   bool shouldRepaint(covariant _DonutPainter old) =>
       old.segments != segments || old.trackColor != trackColor;
 }

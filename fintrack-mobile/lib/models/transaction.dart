@@ -1,11 +1,13 @@
+// One money record: either income or an expense the user added.
 class Transaction {
-  final int? id;
-  final String title;
-  final double amount;
-  final DateTime date;
-  final int categoryId;
-  final String type; // 'income' or 'expense'
-  final String? note;
+  /// Firestore document id. Null for a transaction that hasn't been saved yet.
+  final String? id;
+  final String title;        // short name shown in the list
+  final double amount;       // how much money
+  final DateTime date;       // when it happened
+  final String categoryId;   // which category it belongs to
+  final String type;         // 'income' or 'expense'
+  final String? note;        // optional extra text
 
   Transaction({
     this.id,
@@ -17,12 +19,13 @@ class Transaction {
     this.note,
   });
 
+  // Returns a copy of this transaction with only the given fields changed.
   Transaction copyWith({
-    int? id,
+    String? id,
     String? title,
     double? amount,
     DateTime? date,
-    int? categoryId,
+    String? categoryId,
     String? type,
     String? note,
   }) {
@@ -37,9 +40,11 @@ class Transaction {
     );
   }
 
+  /// Document fields only — the id is the Firestore document id, stored
+  /// separately, so it is never part of the map.
+  // Turns this transaction into a map to send to the backend.
   Map<String, dynamic> toMap() {
     return {
-      if (id != null) 'id': id,
       'title': title,
       'amount': amount,
       'date': date.toIso8601String(),
@@ -49,13 +54,14 @@ class Transaction {
     };
   }
 
-  factory Transaction.fromMap(Map<String, dynamic> map) {
+  // Builds a transaction from map data that came back from the backend.
+  factory Transaction.fromMap(String id, Map<String, dynamic> map) {
     return Transaction(
-      id: map['id'] as int?,
+      id: id,
       title: map['title'] as String,
       amount: (map['amount'] as num).toDouble(),
       date: DateTime.parse(map['date'] as String),
-      categoryId: map['category_id'] as int,
+      categoryId: map['category_id'] as String,
       type: map['type'] as String,
       note: map['note'] as String?,
     );

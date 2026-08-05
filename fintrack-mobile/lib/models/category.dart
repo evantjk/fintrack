@@ -1,8 +1,10 @@
+// A spending/earning group (e.g. Food, Salary) used to label transactions.
 class Category {
-  final int? id;
-  final String name;
-  final String icon;
-  final int colorValue;
+  /// Firestore document id. Null for a category that hasn't been saved yet.
+  final String? id;
+  final String name;        // display name
+  final String icon;        // icon name shown next to it
+  final int colorValue;     // colour stored as a number
   final String type; // 'income' or 'expense' or 'both'
 
   Category({
@@ -13,8 +15,9 @@ class Category {
     required this.type,
   });
 
+  // Returns a copy with only the given fields changed.
   Category copyWith({
-    int? id,
+    String? id,
     String? name,
     String? icon,
     int? colorValue,
@@ -29,9 +32,11 @@ class Category {
     );
   }
 
+  /// Document fields only — the id is the Firestore document id, stored
+  /// separately, so it is never part of the map.
+  // Turns this category into a map to send to the backend.
   Map<String, dynamic> toMap() {
     return {
-      if (id != null) 'id': id,
       'name': name,
       'icon': icon,
       'color_value': colorValue,
@@ -39,12 +44,13 @@ class Category {
     };
   }
 
-  factory Category.fromMap(Map<String, dynamic> map) {
+  // Builds a category from map data that came back from the backend.
+  factory Category.fromMap(String id, Map<String, dynamic> map) {
     return Category(
-      id: map['id'] as int?,
+      id: id,
       name: map['name'] as String,
       icon: map['icon'] as String,
-      colorValue: map['color_value'] as int,
+      colorValue: (map['color_value'] as num).toInt(),
       type: map['type'] as String,
     );
   }

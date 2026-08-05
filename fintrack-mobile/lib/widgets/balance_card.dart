@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 import 'mascots.dart';
 
+// The big card showing total balance, income and expenses.
 class BalanceCard extends StatelessWidget {
   final double balance;
   final double income;
@@ -18,7 +19,6 @@ class BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = PixelColors.of(context);
-    final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
     final bool square = p.radius == 0;
     final BorderRadius chipRadius =
         square ? BorderRadius.zero : BorderRadius.circular(12);
@@ -79,7 +79,7 @@ class BalanceCard extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  fmt.format(balance),
+                  formatCurrency(balance),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 26,
@@ -123,6 +123,7 @@ class BalanceCard extends StatelessWidget {
 }
 
 /// Computed "% saved" pill (income vs expense). Replaces Stitch's fake trend.
+// The small pill showing the savings rate.
 class _SavingsPill extends StatelessWidget {
   final double savingsRate;
   final bool positiveFlow;
@@ -168,6 +169,7 @@ class _SavingsPill extends StatelessWidget {
   }
 }
 
+// A small chip showing one number (income or expense).
 class _SummaryChip extends StatelessWidget {
   final String label;
   final double amount;
@@ -187,7 +189,6 @@ class _SummaryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fmt = NumberFormat.currency(locale: 'en_MY', symbol: 'RM ');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
@@ -220,7 +221,7 @@ class _SummaryChip extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    fmt.format(amount),
+                    formatCurrency(amount),
                     style: const TextStyle(color: Colors.white, fontSize: 10),
                   ),
                 ),

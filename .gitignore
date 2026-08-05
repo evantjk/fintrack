@@ -21,3 +21,9 @@ build/
 .idea/
 .vscode/
 *.iml
+Review.md
+proceeding_plan.md
+
+# JVM crash artifacts (occasionally dropped by Gradle at the repo root)
+hs_err_pid*.log
+replay_pid*.log

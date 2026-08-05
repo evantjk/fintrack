@@ -5,8 +5,9 @@ import '../providers/transaction_provider.dart';
 import '../models/transaction.dart';
 import '../widgets/transaction_tile.dart';
 import '../theme/app_theme.dart';
-import 'add_edit_transaction_screen.dart';
+import '../routes/app_routes.dart';
 
+// The page that lists all transactions with search and filters.
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
 
@@ -25,6 +26,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   @override
+  // Builds the search box, filter bar, and the grouped transaction list.
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -114,11 +116,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       widgets.add(TransactionTile(
         transaction: tx,
         category: cat,
-        onTap: () => Navigator.push(
+        onTap: () => Navigator.pushNamed(
           context,
-          MaterialPageRoute(
-            builder: (_) => AddEditTransactionScreen(transaction: tx),
-          ),
+          AppRoutes.transactionForm,
+          arguments: TransactionArgs(transaction: tx),
         ),
         onDelete: () => provider.deleteTransaction(tx.id!),
       ));
@@ -126,6 +127,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     return widgets;
   }
 
+  // Returns the group label for a date: Today, Yesterday, or the date.
   String _dateBucket(DateTime d) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -137,6 +139,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 }
 
+// The search box for filtering transactions by text.
 class _SearchField extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
@@ -162,6 +165,7 @@ class _SearchField extends StatelessWidget {
   }
 }
 
+// The row of All / Income / Expense filter chips.
 class _FilterBar extends StatelessWidget {
   final String selected;
   final ValueChanged<String> onChanged;
@@ -186,6 +190,7 @@ class _FilterBar extends StatelessWidget {
   }
 }
 
+// A single filter chip button used by the filter bar.
 class _Chip extends StatelessWidget {
   final String label;
   final String value;

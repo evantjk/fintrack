@@ -38,6 +38,7 @@ class ThemeMascot extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Gundam RX-78-2 head
 // ---------------------------------------------------------------------------
+// The Gundam mascot drawing.
 class GundamMascot extends StatelessWidget {
   final double size;
   final Color outline;
@@ -52,6 +53,7 @@ class GundamMascot extends StatelessWidget {
   }
 }
 
+// Draws the Gundam head shapes.
 class _GundamPainter extends CustomPainter {
   final Color outline;
   _GundamPainter(this.outline);
@@ -64,6 +66,7 @@ class _GundamPainter extends CustomPainter {
   static const _eye = Color(0xFFFFF867); // federation neon yellow
 
   @override
+  // Draws the mascot shapes onto the canvas.
   void paint(Canvas canvas, Size size) {
     final s = size.width;
     Offset p(double x, double y) => Offset(x * s, y * s);
@@ -141,6 +144,7 @@ class _GundamPainter extends CustomPainter {
 // ---------------------------------------------------------------------------
 // Hello Kitty face
 // ---------------------------------------------------------------------------
+// The Hello Kitty mascot drawing.
 class HelloKittyMascot extends StatelessWidget {
   final double size;
   final Color outline;
@@ -156,6 +160,7 @@ class HelloKittyMascot extends StatelessWidget {
   }
 }
 
+// Draws the Hello Kitty face shapes.
 class _KittyPainter extends CustomPainter {
   final Color outline;
   _KittyPainter(this.outline);
@@ -167,6 +172,7 @@ class _KittyPainter extends CustomPainter {
   static const _bowHi = Color(0xFFFFB3C7);
 
   @override
+  // Draws the mascot shapes onto the canvas.
   void paint(Canvas canvas, Size size) {
     final s = size.width;
     Offset p(double x, double y) => Offset(x * s, y * s);
@@ -238,6 +244,7 @@ class _KittyPainter extends CustomPainter {
 // ---------------------------------------------------------------------------
 // Luxury — old-money laurel crest
 // ---------------------------------------------------------------------------
+// The Luxury theme mascot drawing.
 class LuxuryMascot extends StatelessWidget {
   final double size;
   final Color outline;
@@ -252,6 +259,7 @@ class LuxuryMascot extends StatelessWidget {
   }
 }
 
+// Draws the Luxury mascot shapes.
 class _LuxuryPainter extends CustomPainter {
   final Color color;
   _LuxuryPainter(this.color);
@@ -272,6 +280,7 @@ class _LuxuryPainter extends CustomPainter {
   }
 
   @override
+  // Draws the mascot shapes onto the canvas.
   void paint(Canvas canvas, Size size) {
     final s = size.width;
     Offset pt(double x, double y) => Offset(x * s, y * s);

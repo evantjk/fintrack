@@ -4,6 +4,7 @@ import '../models/category.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
 
+// The page that shows all categories and lets the user manage them.
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
@@ -12,8 +13,10 @@ class CategoriesScreen extends StatelessWidget {
     final p = PixelColors.of(context);
     // Use the active theme's font (pixel themes -> pixel font, Luxury -> serif,
     // Original -> default) instead of forcing the pixel font everywhere.
-    final tabStyle =
-        TextStyle(fontFamily: p.fontFamily, fontSize: p.hardShadow ? 10 : 14);
+    final tabStyle = TextStyle(
+      fontFamily: p.fontFamily,
+      fontSize: p.hardShadow ? 10 : 14,
+    );
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -36,16 +39,19 @@ class CategoriesScreen extends StatelessWidget {
             return TabBarView(
               children: [
                 _CategoryList(
-                    categories: provider.expenseCategories,
-                    type: 'expense'),
+                  categories: provider.expenseCategories,
+                  type: 'expense',
+                ),
                 _CategoryList(
-                    categories: provider.incomeCategories,
-                    type: 'income'),
+                  categories: provider.incomeCategories,
+                  type: 'income',
+                ),
               ],
             );
           },
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: 'add_category_fab',
           onPressed: () => _showCategoryDialog(context, null),
           child: const Icon(Icons.add),
         ),
@@ -53,6 +59,7 @@ class CategoriesScreen extends StatelessWidget {
     );
   }
 
+  // Opens the popup form to add a new category or edit an existing one.
   void _showCategoryDialog(BuildContext context, Category? category) {
     showDialog(
       context: context,
@@ -61,6 +68,7 @@ class CategoriesScreen extends StatelessWidget {
   }
 }
 
+// The scrollable list of the user's categories.
 class _CategoryList extends StatelessWidget {
   final List<Category> categories;
   final String type;
@@ -77,8 +85,10 @@ class _CategoryList extends StatelessWidget {
           children: [
             Icon(Icons.category_outlined, size: 64, color: p.textMuted),
             const SizedBox(height: 16),
-            Text('No $type categories.',
-                style: TextStyle(color: p.textMuted, fontSize: 9)),
+            Text(
+              'No $type categories.',
+              style: TextStyle(color: p.textMuted, fontSize: 9),
+            ),
           ],
         ),
       );
@@ -101,6 +111,7 @@ class _CategoryList extends StatelessWidget {
     );
   }
 
+  // Asks the user to confirm, then deletes the category.
   void _confirmDelete(BuildContext context, Category cat) async {
     final p = PixelColors.of(context);
     final confirmed = await showDialog<bool>(
@@ -108,25 +119,31 @@ class _CategoryList extends StatelessWidget {
       builder: (_) => AlertDialog(
         title: const Text('Delete Category'),
         content: Text(
-            'Delete "${cat.name}"? Transactions using it will not be deleted.',
-            style: const TextStyle(fontSize: 10, height: 1.6)),
+          'Delete "${cat.name}"? Transactions using it will not be deleted.',
+          style: const TextStyle(fontSize: 10, height: 1.6),
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text('Delete', style: TextStyle(color: p.expense))),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Delete', style: TextStyle(color: p.expense)),
+          ),
         ],
       ),
     );
     if (confirmed == true && context.mounted) {
-      Provider.of<TransactionProvider>(context, listen: false)
-          .deleteCategory(cat.id!);
+      Provider.of<TransactionProvider>(
+        context,
+        listen: false,
+      ).deleteCategory(cat.id!);
     }
   }
 }
 
+// One row showing a category's icon, name and type.
 class _CategoryTile extends StatelessWidget {
   final Category category;
   final VoidCallback onEdit;
@@ -148,23 +165,26 @@ class _CategoryTile extends StatelessWidget {
           width: 46,
           height: 46,
           decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.18),
-              borderRadius: p.radius == 0 ? null : BorderRadius.circular(14),
-              border: Border.all(color: color, width: p.hardShadow ? 2 : 1.5)),
+            color: color.withValues(alpha: 0.18),
+            borderRadius: p.radius == 0 ? null : BorderRadius.circular(14),
+            border: Border.all(color: color, width: p.hardShadow ? 2 : 1.5),
+          ),
           child: Center(
-            child: Text(category.icon,
-                style: const TextStyle(fontSize: 20)),
+            child: Text(category.icon, style: const TextStyle(fontSize: 20)),
           ),
         ),
-        title: Text(category.name,
-            style: TextStyle(fontSize: 11, height: 1.4, color: p.textDark)),
+        title: Text(
+          category.name,
+          style: TextStyle(fontSize: 11, height: 1.4, color: p.textDark),
+        ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(
             category.type == 'income' ? 'Income' : 'Expense',
             style: TextStyle(
-                color: category.type == 'income' ? p.income : p.expense,
-                fontSize: 8),
+              color: category.type == 'income' ? p.income : p.expense,
+              fontSize: 8,
+            ),
           ),
         ),
         trailing: Row(
@@ -185,6 +205,7 @@ class _CategoryTile extends StatelessWidget {
   }
 }
 
+// The popup form used to add or edit a category.
 class _CategoryDialog extends StatefulWidget {
   final Category? category;
   const _CategoryDialog({this.category});
@@ -200,18 +221,45 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   int _colorValue = 0xFF9E9E9E;
 
   final List<String> _icons = [
-    '📦', '🍔', '🚗', '🛍️', '📄', '💊', '🎬', '📚',
-    '💼', '💻', '📈', '🎁', '🏠', '✈️', '🎓', '💰',
-    '🏋️', '🎮', '🐶', '☕',
+    '📦',
+    '🍔',
+    '🚗',
+    '🛍️',
+    '📄',
+    '💊',
+    '🎬',
+    '📚',
+    '💼',
+    '💻',
+    '📈',
+    '🎁',
+    '🏠',
+    '✈️',
+    '🎓',
+    '💰',
+    '🏋️',
+    '🎮',
+    '🐶',
+    '☕',
   ];
 
   final List<int> _colors = [
-    0xFFF44336, 0xFFE91E63, 0xFF9C27B0, 0xFF3F51B5,
-    0xFF2196F3, 0xFF00BCD4, 0xFF4CAF50, 0xFF8BC34A,
-    0xFFFF9800, 0xFFFF5722, 0xFF607D8B, 0xFF795548,
+    0xFF2E7D32, // Dark green
+    0xFF1565C0, // Blue
+    0xFF6A1B9A, // Purple
+    0xFFFF8F00, // Amber
+    0xFF43A047, // Green
+    0xFFFDD835, // Dark yellow
+    0xFFEC407A, // Pink
+    0xFF5D4037, // Brown
+    0xFF00ACC1, // Cyan
+    0xFFFF5722, // Deep orange
+    0xFF283593, // Indigo
+    0xFF7E57C2, // Purple
   ];
 
   @override
+  // Pre-fills the dialog with the category's values when editing.
   void initState() {
     super.initState();
     if (widget.category != null) {
@@ -241,7 +289,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             TextField(
               controller: _nameCtrl,
               decoration: const InputDecoration(
-                  labelText: 'Category Name', hintText: 'e.g. Coffee'),
+                labelText: 'Category Name',
+                hintText: 'e.g. Coffee',
+              ),
             ),
             const SizedBox(height: 16),
             Text('Type', style: TextStyle(fontSize: 9, color: p.textDark)),
@@ -260,29 +310,34 @@ class _CategoryDialogState extends State<_CategoryDialog> {
               spacing: 8,
               runSpacing: 8,
               children: _icons
-                  .map((ic) => GestureDetector(
-                        onTap: () => setState(() => _icon = ic),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
+                  .map(
+                    (ic) => GestureDetector(
+                      onTap: () => setState(() => _icon = ic),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: _icon == ic
+                              ? p.accent.withValues(alpha: 0.15)
+                              : p.surfaceAlt,
+                          borderRadius: p.radius == 0
+                              ? null
+                              : BorderRadius.circular(10),
+                          border: Border.all(
                             color: _icon == ic
-                                ? p.accent.withValues(alpha: 0.15)
-                                : p.surfaceAlt,
-                            borderRadius:
-                                p.radius == 0 ? null : BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _icon == ic
-                                  ? p.accent
-                                  : (p.hardShadow ? p.outline : const Color(0xFFE0E0E0)),
-                              width: _icon == ic ? 2 : 1.5,
-                            ),
+                                ? p.accent
+                                : (p.hardShadow
+                                      ? p.outline
+                                      : const Color(0xFFE0E0E0)),
+                            width: _icon == ic ? 2 : 1.5,
                           ),
-                          child: Center(
-                              child: Text(ic,
-                                  style: const TextStyle(fontSize: 20))),
                         ),
-                      ))
+                        child: Center(
+                          child: Text(ic, style: const TextStyle(fontSize: 20)),
+                        ),
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
             const SizedBox(height: 16),
@@ -292,21 +347,27 @@ class _CategoryDialogState extends State<_CategoryDialog> {
               spacing: 8,
               runSpacing: 8,
               children: _colors
-                  .map((c) => GestureDetector(
-                        onTap: () => setState(() => _colorValue = c),
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: Color(c),
-                            shape: p.radius == 0 ? BoxShape.rectangle : BoxShape.circle,
-                            border: Border.all(
-                              color: _colorValue == c ? p.outline : Colors.transparent,
-                              width: 3,
-                            ),
+                  .map(
+                    (c) => GestureDetector(
+                      onTap: () => setState(() => _colorValue = c),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Color(c),
+                          shape: p.radius == 0
+                              ? BoxShape.rectangle
+                              : BoxShape.circle,
+                          border: Border.all(
+                            color: _colorValue == c
+                                ? p.outline
+                                : Colors.transparent,
+                            width: 3,
                           ),
                         ),
-                      ))
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ],
@@ -314,12 +375,10 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel')),
-        ElevatedButton(
-          onPressed: _save,
-          child: const Text('Save'),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
         ),
+        ElevatedButton(onPressed: _save, child: const Text('Save')),
       ],
     );
   }
@@ -337,22 +396,27 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           color: isSelected ? color.withValues(alpha: 0.15) : p.surfaceAlt,
           borderRadius: p.radius == 0 ? null : BorderRadius.circular(8),
           border: Border.all(
-              color: isSelected
-                  ? color
-                  : (p.hardShadow ? p.outline : const Color(0xFFE0E0E0)),
-              width: isSelected ? 2 : 1.5),
+            color: isSelected
+                ? color
+                : (p.hardShadow ? p.outline : const Color(0xFFE0E0E0)),
+            width: isSelected ? 2 : 1.5,
+          ),
         ),
-        child: Text(label,
-            style: TextStyle(
-                color: isSelected ? color : p.textMuted, fontSize: 9)),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? color : p.textMuted,
+            fontSize: 9,
+          ),
+        ),
       ),
     );
   }
 
+  // Validates and saves the category (new or edited), then closes the dialog.
   void _save() {
     if (_nameCtrl.text.trim().isEmpty) return;
-    final provider =
-        Provider.of<TransactionProvider>(context, listen: false);
+    final provider = Provider.of<TransactionProvider>(context, listen: false);
     final cat = Category(
       id: widget.category?.id,
       name: _nameCtrl.text.trim(),
